@@ -1,5 +1,5 @@
 // src/controllers/orderController.ts
-// Order creation + PayOS webhook handler + status polling
+// Order creation + PayOS webhook handler
 //
 // ⚠️ TDD Rules:
 //   - order_code: Number when calling PayOS, String in DB
@@ -8,7 +8,7 @@
 //   - HMAC: verify before processing
 
 import { Request, Response } from 'express';
-import { getSupabaseAdmin } from '../middleware/auth';
+import { supabaseAdmin } from '../middleware/auth';
 import { createPaymentLink, verifyWebhookSignature } from '../services/payosService';
 import { sendTelegramMessage, buildOrderNotification } from '../services/telegramService';
 import type { CreateOrderPayload } from '../types/index';
@@ -17,6 +17,7 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 export async function createOrder(req: Request, res: Response): Promise<void> {
   const user = req.user!;
+
   const body: CreateOrderPayload = req.body;
   const { variantId, productId, familyEmail } = body;
 
@@ -26,9 +27,8 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
   }
 
   try {
-    const db = getSupabaseAdmin();
-
-    const { data: variant, error: variantError } = await db
+    // 1. Fetch variant + product info
+    const { data: variant, error: variantError } = await supabaseAdmin
       .from('product_variants')
       .select('id, variant_name, price, type, products(id, name)')
       .eq('id', variantId)
@@ -39,6 +39,7 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
       return;
     }
 
+    // 2. Validate family email if required
     const variantType = variant.type as string;
     if (variantType === 'family') {
       if (!familyEmail || !familyEmail.includes('@')) {
@@ -47,10 +48,13 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
       }
     }
 
+    // 3. Generate a unique order code (timestamp-based, safe for PayOS Number)
+    // Using last 9 digits of timestamp to stay within JS safe integer range
     const orderCode = parseInt(Date.now().toString().slice(-9));
-    const orderCodeStr = orderCode.toString();
+    const orderCodeStr = orderCode.toString(); // Store as String in DB
 
-    const { data: order, error: orderError } = await db
+    // 4. Create order record in DB
+    const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
         user_id: user.id,
@@ -67,20 +71,22 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    await db.from('order_items').insert({
+    // 5. Create order_item record
+    await supabaseAdmin.from('order_items').insert({
       order_id: order.id,
       variant_id: variantId,
       product_id: productId,
       price: variant.price,
     });
 
-    const productInfo = variant.products as { name: string } | null;
+    // 6. Call PayOS to create payment link
+    const productInfo = variant.products as unknown as { name: string } | null;
     const productName = productInfo?.name || 'San pham';
 
     const paymentLink = await createPaymentLink({
-      orderCode,
+      orderCode,           // ⚠️ Number type for PayOS
       amount: variant.price,
-      description: productName.substring(0, 25),
+      description: productName.substring(0, 25), // ⚠️ Max 25 chars
       productName: variant.variant_name,
       price: variant.price,
       cancelUrl: `${CLIENT_URL}/checkout/cancel?orderCode=${orderCodeStr}`,
@@ -102,37 +108,14 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
   }
 }
 
-// ── Lightweight status polling (public) ──────────────────────
-
-export async function getOrderStatus(req: Request, res: Response): Promise<void> {
-  const { orderCode } = req.params;
-
-  try {
-    const db = getSupabaseAdmin();
-    const { data: order, error } = await db
-      .from('orders')
-      .select('id, order_code, status, updated_at')
-      .eq('order_code', orderCode)
-      .single();
-
-    if (error || !order) {
-      res.status(404).json({ success: false, error: 'Order not found' });
-      return;
-    }
-
-    res.json({ success: true, data: { status: order.status, updatedAt: order.updated_at } });
-  } catch (err) {
-    console.error('[getOrderStatus] Error:', err);
-    res.status(500).json({ success: false, error: 'Failed to get order status' });
-  }
-}
-
-// ── PayOS Webhook ─────────────────────────────────────────────
-
 export async function payosWebhook(req: Request, res: Response): Promise<void> {
+  // ⚠️ ALWAYS return 200 regardless of processing result
+  // If we return non-200, PayOS will retry and cause spam
+
   const body = req.body;
 
   try {
+    // 1. Verify HMAC signature (sorted keys)
     const { data, signature } = body;
 
     if (!data || !signature) {
@@ -148,16 +131,18 @@ export async function payosWebhook(req: Request, res: Response): Promise<void> {
       return;
     }
 
+    // 2. Check payment status: ⚠️ EXACT condition from TDD
     const isPaid = body.code === '00' && body.success === true;
     if (!isPaid) {
+      console.log('[Webhook] Payment not confirmed, code:', body.code);
       res.status(200).json({ success: true, message: 'Not a payment confirmation' });
       return;
     }
 
-    const db = getSupabaseAdmin();
+    // 3. Find order by order_code (handle as String)
     const orderCodeStr = String(data.orderCode);
 
-    const { data: order, error: orderError } = await db
+    const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .select('id, status, user_id, family_email_capture, order_items(variant_id, product_id, price, product_variants(variant_name, type), products(name))')
       .eq('order_code', orderCodeStr)
@@ -169,15 +154,24 @@ export async function payosWebhook(req: Request, res: Response): Promise<void> {
       return;
     }
 
+    // Avoid duplicate processing
     if (order.status !== 'PENDING') {
+      console.log('[Webhook] Order already processed:', order.status);
       res.status(200).json({ success: true, message: 'Already processed' });
       return;
     }
 
-    await db.from('orders').update({ status: 'PAID', updated_at: new Date().toISOString() }).eq('id', order.id);
+    // 4. Update order to PAID first
+    await supabaseAdmin
+      .from('orders')
+      .update({ status: 'PAID', updated_at: new Date().toISOString() })
+      .eq('id', order.id);
 
-    const orderItems = order.order_items as Array<{
-      variant_id: string; product_id: string; price: number;
+    // 5. Get order details for notification
+    const orderItems = order.order_items as unknown as Array<{
+      variant_id: string;
+      product_id: string;
+      price: number;
       product_variants: { variant_name: string; type: string } | null;
       products: { name: string } | null;
     }>;
@@ -187,17 +181,34 @@ export async function payosWebhook(req: Request, res: Response): Promise<void> {
     const variantName = firstItem?.product_variants?.variant_name || '';
     const amount = firstItem?.price || 0;
 
-    const { data: profile } = await db.from('profiles').select('email').eq('id', order.user_id).single();
+    // Fetch user email
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('email')
+      .eq('id', order.user_id)
+      .single();
+
     const userEmail = profile?.email || 'Unknown';
 
+    // 6. Family type: notify Telegram, do NOT auto-fulfill
     if (variantType === 'family') {
-      const message = buildOrderNotification({ orderCode: orderCodeStr, productName, variantName, amount, userEmail, familyEmail: order.family_email_capture || undefined, status: 'PAID' });
+      const message = buildOrderNotification({
+        orderCode: orderCodeStr,
+        productName,
+        variantName,
+        amount,
+        userEmail,
+        familyEmail: order.family_email_capture || undefined,
+        status: 'PAID',
+      });
       await sendTelegramMessage(message);
       res.status(200).json({ success: true, message: 'Family order notified' });
       return;
     }
 
-    const { data: txResult, error: txError } = await db.rpc('fulfill_order_transaction', { p_order_id: order.id });
+    // 7. Account type: run ACID transaction via Supabase RPC
+    const { data: txResult, error: txError } = await supabaseAdmin
+      .rpc('fulfill_order_transaction', { p_order_id: order.id });
 
     if (txError) {
       console.error('[Webhook] Transaction RPC error:', txError);
@@ -210,8 +221,17 @@ export async function payosWebhook(req: Request, res: Response): Promise<void> {
 
     if (!txData.success) {
       if (txData.error === 'OUT_OF_STOCK') {
-        const message = buildOrderNotification({ orderCode: orderCodeStr, productName, variantName, amount, userEmail, status: 'OUT_OF_STOCK' });
+        // Notify Telegram about stock shortage
+        const message = buildOrderNotification({
+          orderCode: orderCodeStr,
+          productName,
+          variantName,
+          amount,
+          userEmail,
+          status: 'OUT_OF_STOCK',
+        });
         await sendTelegramMessage(message);
+        console.log('[Webhook] Out of stock for order:', orderCodeStr);
       } else {
         await sendTelegramMessage(`⚠️ Lỗi giao hàng đơn ${orderCodeStr}: ${txData.error}`);
       }
@@ -219,11 +239,21 @@ export async function payosWebhook(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const message = buildOrderNotification({ orderCode: orderCodeStr, productName, variantName, amount, userEmail, status: 'FULFILLED' });
+    // 8. Fulfilled successfully — notify Telegram
+    const message = buildOrderNotification({
+      orderCode: orderCodeStr,
+      productName,
+      variantName,
+      amount,
+      userEmail,
+      status: 'FULFILLED',
+    });
     await sendTelegramMessage(message);
+
     res.status(200).json({ success: true, message: 'Order fulfilled' });
   } catch (err) {
     console.error('[Webhook] Unexpected error:', err);
+    // ⚠️ Still return 200 to prevent PayOS retry
     res.status(200).json({ success: false, error: 'Internal server error' });
   }
 }

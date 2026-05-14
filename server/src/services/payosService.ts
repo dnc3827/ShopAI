@@ -21,7 +21,7 @@ export function getPayos(): PayOS {
     if (!clientId || !apiKey || !checksumKey) {
       throw new Error('Missing PayOS environment variables: PAYOS_CLIENT_ID, PAYOS_API_KEY, PAYOS_CHECKSUM_KEY');
     }
-    _payos = new PayOS(clientId, apiKey, checksumKey);
+    _payos = new PayOS({ clientId, apiKey, checksumKey });
   }
   return _payos;
 }
@@ -52,7 +52,7 @@ export async function createPaymentLink(params: CreatePaymentLinkParams) {
       },
     ],
   };
-  return await payos.createPaymentLink(paymentData);
+  return await payos.paymentRequests.create(paymentData);
 }
 
 /**

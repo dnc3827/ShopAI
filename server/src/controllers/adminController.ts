@@ -7,28 +7,41 @@ import { getSupabaseAdmin } from '../middleware/auth';
 // ─── INVENTORY ──────────────────────────────────────────────
 
 export async function getInventoryStats(_req: Request, res: Response): Promise<void> {
+  console.log('[getInventoryStats] START');
   try {
     const db = getSupabaseAdmin();
+    console.log('[getInventoryStats] Supabase admin client created');
 
-    // Get all variants with product names
+    // Step 1: Get all variants with product names
+    console.log('[getInventoryStats] Step 1: querying product_variants...');
     const { data: variants, error: variantsError } = await db
       .from('product_variants')
       .select('id, variant_name, products(name)')
       .order('created_at');
 
-    if (variantsError) throw variantsError;
+    if (variantsError) {
+      console.error('[getInventoryStats] Step 1 FAILED:', JSON.stringify(variantsError));
+      throw variantsError;
+    }
+    console.log('[getInventoryStats] Step 1 OK — variants count:', variants?.length);
 
-    // Count AVAILABLE items per variant
-    const { data: available } = await db
+    // Step 2: Count AVAILABLE items per variant
+    console.log('[getInventoryStats] Step 2: querying inventory AVAILABLE...');
+    const { data: available, error: availableError } = await db
       .from('inventory')
       .select('variant_id')
       .eq('status', 'AVAILABLE');
+    if (availableError) console.error('[getInventoryStats] Step 2 FAILED:', JSON.stringify(availableError));
+    console.log('[getInventoryStats] Step 2 OK — available count:', available?.length);
 
-    // Count SOLD items per variant
-    const { data: sold } = await db
+    // Step 3: Count SOLD items per variant
+    console.log('[getInventoryStats] Step 3: querying inventory SOLD...');
+    const { data: sold, error: soldError } = await db
       .from('inventory')
       .select('variant_id')
       .eq('status', 'SOLD');
+    if (soldError) console.error('[getInventoryStats] Step 3 FAILED:', JSON.stringify(soldError));
+    console.log('[getInventoryStats] Step 3 OK — sold count:', sold?.length);
 
     const availableMap: Record<string, number> = {};
     (available || []).forEach((r: { variant_id: string }) => {
@@ -48,14 +61,16 @@ export async function getInventoryStats(_req: Request, res: Response): Promise<v
       sold_count: soldMap[v.id as string] || 0,
     }));
 
+    console.log('[getInventoryStats] SUCCESS — stats count:', stats.length);
     res.json({ success: true, data: stats });
   } catch (err) {
-    console.error('[getInventoryStats] Error:', err);
+    console.error('[getInventoryStats] FATAL ERROR:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch inventory stats' });
   }
 }
 
 export async function getInventoryList(req: Request, res: Response): Promise<void> {
+  console.log('[getInventoryList] START — query:', req.query);
   try {
     const db = getSupabaseAdmin();
     const { variant_id, status } = req.query;
@@ -69,11 +84,15 @@ export async function getInventoryList(req: Request, res: Response): Promise<voi
     if (status) query = query.eq('status', status as string);
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      console.error('[getInventoryList] Query FAILED:', JSON.stringify(error));
+      throw error;
+    }
 
+    console.log('[getInventoryList] SUCCESS — items count:', data?.length);
     res.json({ success: true, data });
   } catch (err) {
-    console.error('[getInventoryList] Error:', err);
+    console.error('[getInventoryList] FATAL ERROR:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch inventory' });
   }
 }
@@ -154,10 +173,12 @@ export async function bulkAddInventory(req: Request, res: Response): Promise<voi
 // ─── ORDERS ─────────────────────────────────────────────────
 
 export async function getAdminOrders(req: Request, res: Response): Promise<void> {
+  console.log('[getAdminOrders] START — query:', req.query);
   try {
     const db = getSupabaseAdmin();
     const { status, limit = '50', offset = '0' } = req.query;
 
+    console.log('[getAdminOrders] Building orders query...');
     let query = db
       .from('orders')
       .select(`
@@ -179,11 +200,15 @@ export async function getAdminOrders(req: Request, res: Response): Promise<void>
     if (status) query = query.eq('status', status as string);
 
     const { data, error, count } = await query;
-    if (error) throw error;
+    if (error) {
+      console.error('[getAdminOrders] Query FAILED:', JSON.stringify(error));
+      throw error;
+    }
 
+    console.log('[getAdminOrders] SUCCESS — orders count:', data?.length, 'total:', count);
     res.json({ success: true, data, total: count });
   } catch (err) {
-    console.error('[getAdminOrders] Error:', err);
+    console.error('[getAdminOrders] FATAL ERROR:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch orders' });
   }
 }

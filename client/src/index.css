@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-surface text-slate-900 font-['Inter',_sans-serif];
+  }
+}
+
+.card {
+  @apply bg-white rounded-custom shadow-sm border border-slate-100;
+}
+
+.btn-primary {
+  @apply bg-primary text-white px-4 py-2 rounded-custom hover:bg-blue-600 transition-colors disabled:opacity-50;
+}

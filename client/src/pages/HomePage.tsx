@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchProducts, ApiProduct } from '../lib/api';
+import { fetchProducts } from '../lib/api';
+import type { ApiProduct } from '../lib/api';
 import { Card, CardBody } from '../components/ui/Card';
 import { Headline, Title, Body, Label } from '../components/ui/Typography';
 import { Badge } from '../components/ui/Badge';

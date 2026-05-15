@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { ChevronRight, CheckCircle2, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 import { fetchProductById, createOrder } from '../lib/api';
 import type { ApiProduct } from '../lib/api';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../data/mock';
 import { Button } from '../components/ui/Button';
 import { Card, CardBody } from '../components/ui/Card';
 import { Headline, Title, Label } from '../components/ui/Typography';
@@ -30,25 +29,9 @@ export const ProductDetailPage: React.FC = () => {
 
     fetchProductById(id)
       .then(setProduct)
-      .catch(() => {
-        // Fallback to mock data if API not configured
-        const mockProduct = MOCK_PRODUCTS.find(p => p.id === id);
-        if (mockProduct) {
-          setProduct({
-            id: mockProduct.id,
-            name: mockProduct.name,
-            description: mockProduct.description,
-            category_id: mockProduct.category_id,
-            categories: MOCK_CATEGORIES.find(c => c.id === mockProduct.category_id) || null,
-            product_variants: mockProduct.variants.map(v => ({
-              id: v.id,
-              variant_name: v.variant_name,
-              price: v.price,
-              type: v.type,
-              inventory_count: v.inventory_count ?? 0,
-            })),
-          });
-        }
+      .catch(err => {
+        console.error('Failed to fetch product:', err);
+        setProduct(null);
       })
       .finally(() => setIsLoadingProduct(false));
   }, [id]);

@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import api from '../lib/api';
 
 interface AuthContextValue {
   user: User | null;
@@ -32,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) fetchAdminStatus(session.user.id);
+      if (session?.user) fetchAdminStatus();
       else setIsLoading(false);
     });
 
@@ -40,7 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) fetchAdminStatus(session.user.id);
+      if (session?.user) fetchAdminStatus();
       else {
         setIsAdmin(false);
         setIsLoading(false);
@@ -50,14 +51,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchAdminStatus = async (userId: string) => {
+  const fetchAdminStatus = async () => {
     try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', userId)
-        .single();
-      setIsAdmin(data?.is_admin || false);
+      const res = await api.get<{ success: boolean; data: { is_admin: boolean } }>('/user/profile');
+      setIsAdmin(res.data.data?.is_admin || false);
     } catch {
       setIsAdmin(false);
     } finally {

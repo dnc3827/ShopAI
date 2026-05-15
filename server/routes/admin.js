@@ -184,9 +184,9 @@ router.get('/orders', async (req, res) => {
       .from('orders')
       .select(`
         id, order_code, status, family_email_capture, created_at, updated_at,
-        profiles(email, full_name),
+        user_id,
         order_items(
-          price, quantity,
+          price,
           product_variants(variant_name),
           products(name)
         )
@@ -205,8 +205,27 @@ router.get('/orders', async (req, res) => {
       throw error;
     }
 
-    console.log('[getAdminOrders] SUCCESS — orders count:', data?.length, 'total:', count);
-    res.json({ success: true, data, total: count });
+    // Fetch profiles for these users manually
+    const userIds = [...new Set((data || []).map(o => o.user_id))].filter(Boolean);
+    let profilesMap = {};
+    if (userIds.length > 0) {
+      const { data: profilesData } = await db
+        .from('profiles')
+        .select('id, email, full_name')
+        .in('id', userIds);
+      
+      (profilesData || []).forEach(p => {
+        profilesMap[p.id] = { email: p.email, full_name: p.full_name };
+      });
+    }
+
+    const enrichedData = (data || []).map(o => ({
+      ...o,
+      profiles: profilesMap[o.user_id] || { email: 'Unknown', full_name: 'Unknown' }
+    }));
+
+    console.log('[getAdminOrders] SUCCESS — orders count:', enrichedData.length, 'total:', count);
+    res.json({ success: true, data: enrichedData, total: count });
   } catch (err) {
     console.error('[getAdminOrders] FATAL ERROR:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch orders' });

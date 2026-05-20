@@ -232,4 +232,160 @@ router.get('/orders', async (req, res) => {
   }
 });
 
+// ─── CATEGORIES ──────────────────────────────────────────────
+
+router.get('/categories', async (req, res) => {
+  try {
+    const db = getSupabaseAdmin();
+    const { data, error } = await db.from('categories').select('*').order('name');
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/categories', async (req, res) => {
+  const { name, slug } = req.body;
+  if (!name || !slug) return res.status(400).json({ success: false, error: 'Name and slug are required' });
+  try {
+    const db = getSupabaseAdmin();
+    const { data, error } = await db.from('categories').insert({ name, slug }).select().single();
+    if (error) throw error;
+    res.status(201).json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.patch('/categories/:id', async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  try {
+    const db = getSupabaseAdmin();
+    const { data, error } = await db.from('categories').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.delete('/categories/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const db = getSupabaseAdmin();
+    const { error } = await db.from('categories').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ success: false, error: 'Không thể xoá danh mục này do đã có sản phẩm.' });
+  }
+});
+
+// ─── PRODUCTS ────────────────────────────────────────────────
+
+router.get('/products', async (req, res) => {
+  try {
+    const db = getSupabaseAdmin();
+    const { data, error } = await db.from('products').select(`*, categories(name)`).order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/products', async (req, res) => {
+  const { name, description, category_id, image_url } = req.body;
+  if (!name || !category_id) return res.status(400).json({ success: false, error: 'Name and Category ID are required' });
+  try {
+    const db = getSupabaseAdmin();
+    const { data, error } = await db.from('products').insert({ name, description, category_id, image_url }).select().single();
+    if (error) throw error;
+    res.status(201).json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.patch('/products/:id', async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  try {
+    const db = getSupabaseAdmin();
+    const { data, error } = await db.from('products').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.delete('/products/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const db = getSupabaseAdmin();
+    const { error } = await db.from('products').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ success: false, error: 'Không thể xoá sản phẩm này do đã có giao dịch.' });
+  }
+});
+
+// ─── VARIANTS ────────────────────────────────────────────────
+
+router.get('/variants/:product_id', async (req, res) => {
+  const { product_id } = req.params;
+  try {
+    const db = getSupabaseAdmin();
+    const { data, error } = await db.from('product_variants').select('*').eq('product_id', product_id).order('created_at');
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/variants', async (req, res) => {
+  const { product_id, variant_name, price, type } = req.body;
+  if (!product_id || !variant_name || price === undefined || !type) {
+    return res.status(400).json({ success: false, error: 'Missing required fields' });
+  }
+  try {
+    const db = getSupabaseAdmin();
+    const { data, error } = await db.from('product_variants').insert({ product_id, variant_name, price, type }).select().single();
+    if (error) throw error;
+    res.status(201).json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.patch('/variants/:id', async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  try {
+    const db = getSupabaseAdmin();
+    const { data, error } = await db.from('product_variants').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.delete('/variants/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const db = getSupabaseAdmin();
+    const { error } = await db.from('product_variants').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ success: false, error: 'Không thể xoá gói này do đã có tồn kho hoặc giao dịch.' });
+  }
+});
+
 module.exports = router;

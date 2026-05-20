@@ -7,6 +7,7 @@ import { Card, CardBody } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Headline, Title } from '../components/ui/Typography';
+import { ProductCRUD } from '../components/admin/ProductCRUD';
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -235,12 +236,12 @@ const RestockModal: React.FC<{
 
 // ── Admin Page ───────────────────────────────────────────────
 
-type AdminTab = 'inventory' | 'orders';
+type AdminTab = 'products' | 'inventory' | 'orders';
 
 export const AdminPage: React.FC = () => {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<AdminTab>('inventory');
+  const [tab, setTab] = useState<AdminTab>('products');
   const [stats, setStats] = useState<InventoryStat[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -296,16 +297,19 @@ export const AdminPage: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 mb-8">
-        {(['inventory', 'orders'] as const).map(t => (
+      <div className="flex border-b border-slate-200 mb-8 overflow-x-auto">
+        {(['products', 'inventory', 'orders'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               tab === t ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}>
-            {t === 'inventory' ? '📦 Kho hàng' : '🧾 Đơn hàng'}
+            {t === 'products' ? '🛒 Sản phẩm' : t === 'inventory' ? '📦 Kho hàng' : '🧾 Đơn hàng'}
           </button>
         ))}
       </div>
+
+      {/* ── PRODUCTS TAB ── */}
+      {tab === 'products' && <ProductCRUD />}
 
       {/* ── INVENTORY TAB ── */}
       {tab === 'inventory' && (

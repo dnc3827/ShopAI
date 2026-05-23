@@ -37,8 +37,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       else setIsLoading(false);
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for auth changes — only react to real auth events, NOT token refresh
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // TOKEN_REFRESHED fires on every tab-focus; ignore it to prevent spurious re-renders
+      if (event === 'TOKEN_REFRESHED') return;
+
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) fetchAdminStatus();

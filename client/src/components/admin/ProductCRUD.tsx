@@ -203,16 +203,27 @@ const CategoryModal: React.FC<{ onClose: () => void, onSuccess: () => void }> = 
 
 const ProductModal: React.FC<{ categories: ApiCategory[], onClose: () => void, onSuccess: () => void }> = ({ categories, onClose, onSuccess }) => {
   const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
   const [desc, setDesc] = useState('');
   const [catId, setCatId] = useState('');
   const [img, setImg] = useState('');
+  const [status, setStatus] = useState('visible');
+  const [isFeatured, setIsFeatured] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await createAdminProduct({ name, description: desc, category_id: catId, image_url: img });
+      await createAdminProduct({ 
+        name, 
+        slug: slug || undefined,
+        description: desc, 
+        category_id: catId, 
+        thumbnail_url: img,
+        status,
+        is_featured: isFeatured
+      });
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -224,26 +235,48 @@ const ProductModal: React.FC<{ categories: ApiCategory[], onClose: () => void, o
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-      <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden">
+      <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex justify-between p-5 border-b">
           <Title className="text-lg">Thêm sản phẩm mới</Title>
           <button onClick={onClose}><X className="w-5 h-5 text-slate-400" /></button>
         </div>
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Tên sản phẩm *</label>
-            <input required value={name} onChange={e => setName(e.target.value)} className="w-full border p-2 rounded-lg" />
+        <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Tên sản phẩm *</label>
+              <input required value={name} onChange={e => setName(e.target.value)} className="w-full border p-2 rounded-lg" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Slug</label>
+              <input value={slug} onChange={e => setSlug(e.target.value)} className="w-full border p-2 rounded-lg" placeholder="Tự tạo nếu trống" />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Danh mục *</label>
-            <select required value={catId} onChange={e => setCatId(e.target.value)} className="w-full border p-2 rounded-lg">
-              <option value="">-- Chọn danh mục --</option>
-              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Danh mục *</label>
+              <select required value={catId} onChange={e => setCatId(e.target.value)} className="w-full border p-2 rounded-lg">
+                <option value="">-- Chọn danh mục --</option>
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Trạng thái</label>
+              <select required value={status} onChange={e => setStatus(e.target.value)} className="w-full border p-2 rounded-lg">
+                <option value="visible">Hiển thị</option>
+                <option value="hidden">Ẩn</option>
+                <option value="coming_soon">Sắp ra mắt</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Hình ảnh (URL)</label>
-            <input value={img} onChange={e => setImg(e.target.value)} className="w-full border p-2 rounded-lg" placeholder="https://..." />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Hình ảnh (URL)</label>
+              <input value={img} onChange={e => setImg(e.target.value)} className="w-full border p-2 rounded-lg" placeholder="https://..." />
+            </div>
+            <div className="flex items-center mt-6">
+              <input type="checkbox" id="is_featured" checked={isFeatured} onChange={e => setIsFeatured(e.target.checked)} className="mr-2 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+              <label htmlFor="is_featured" className="text-sm font-medium">Sản phẩm nổi bật (Featured)</label>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Mô tả</label>
@@ -267,6 +300,7 @@ const VariantsModal: React.FC<{ product: AdminApiProduct, onClose: () => void }>
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [type, setType] = useState<'account' | 'family'>('account');
+  const [duration, setDuration] = useState('30');
   const [adding, setAdding] = useState(false);
 
   const loadVariants = async () => {
@@ -286,9 +320,16 @@ const VariantsModal: React.FC<{ product: AdminApiProduct, onClose: () => void }>
     e.preventDefault();
     setAdding(true);
     try {
-      await createAdminVariant({ product_id: product.id, variant_name: name, price: Number(price), type });
+      await createAdminVariant({ 
+        product_id: product.id, 
+        variant_name: name, 
+        price: Number(price), 
+        type, 
+        duration_days: Number(duration) 
+      });
       setName('');
       setPrice('');
+      setDuration('30');
       loadVariants();
     } catch (err: any) {
       alert(err.message || 'Lỗi thêm gói');
@@ -309,7 +350,7 @@ const VariantsModal: React.FC<{ product: AdminApiProduct, onClose: () => void }>
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-      <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex justify-between p-5 border-b">
           <Title className="text-lg">Cấu hình gói - {product.name}</Title>
           <button onClick={onClose}><X className="w-5 h-5 text-slate-400" /></button>
@@ -325,7 +366,8 @@ const VariantsModal: React.FC<{ product: AdminApiProduct, onClose: () => void }>
                   <div>
                     <div className="font-medium text-slate-900">{v.variant_name}</div>
                     <div className="text-sm text-slate-500">
-                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v.price)} • {v.type === 'family' ? 'Family (Mời Email)' : 'Account (Cấp sẵn)'}
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v.price)} • 
+                      {v.type === 'family' ? ' Family' : ' Account'} • {v.duration_days} ngày
                     </div>
                   </div>
                   <button onClick={() => handleDelete(v.id)} className="text-red-500 p-2 hover:bg-red-50 rounded-lg">
@@ -340,17 +382,20 @@ const VariantsModal: React.FC<{ product: AdminApiProduct, onClose: () => void }>
           <div className="bg-white p-5 rounded-xl border shadow-sm">
             <h4 className="font-medium mb-3">Thêm gói mới</h4>
             <form onSubmit={handleAdd} className="grid grid-cols-12 gap-3">
-              <div className="col-span-12 sm:col-span-4">
+              <div className="col-span-12 sm:col-span-3">
                 <input required value={name} onChange={e => setName(e.target.value)} placeholder="Tên gói (VD: 1 Tháng)" className="w-full border p-2 rounded-lg text-sm" />
               </div>
               <div className="col-span-12 sm:col-span-3">
                 <input required type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="Giá (VNĐ)" className="w-full border p-2 rounded-lg text-sm" />
               </div>
-              <div className="col-span-12 sm:col-span-3">
+              <div className="col-span-12 sm:col-span-2">
                 <select value={type} onChange={e => setType(e.target.value as any)} className="w-full border p-2 rounded-lg text-sm bg-white">
                   <option value="account">Account</option>
                   <option value="family">Family</option>
                 </select>
+              </div>
+              <div className="col-span-12 sm:col-span-2">
+                <input required type="number" value={duration} onChange={e => setDuration(e.target.value)} placeholder="Số ngày" className="w-full border p-2 rounded-lg text-sm" />
               </div>
               <div className="col-span-12 sm:col-span-2 flex items-end">
                 <Button type="submit" isLoading={adding} className="w-full h-full py-2">Thêm</Button>

@@ -85,6 +85,7 @@ export interface ApiVariant {
   variant_name: string;
   price: number;
   type: 'account' | 'family';
+  duration_days: number;
   product_id: string;
 }
 
@@ -93,7 +94,10 @@ export interface AdminApiProduct {
   name: string;
   description: string;
   category_id: string;
-  image_url: string | null;
+  thumbnail_url: string | null;
+  status: string;
+  is_featured: boolean;
+  slug: string;
   created_at: string;
   categories: { name: string } | null;
 }
@@ -120,11 +124,11 @@ export async function fetchAdminProducts(): Promise<AdminApiProduct[]> {
   const res = await api.get<{ success: boolean; data: AdminApiProduct[] }>('/admin/products');
   return res.data.data;
 }
-export async function createAdminProduct(data: { name: string; description: string; category_id: string; image_url?: string }): Promise<AdminApiProduct> {
+export async function createAdminProduct(data: { name: string; description: string; category_id: string; thumbnail_url?: string; status: string; is_featured: boolean; slug?: string; }): Promise<AdminApiProduct> {
   const res = await api.post<{ success: boolean; data: AdminApiProduct }>('/admin/products', data);
   return res.data.data;
 }
-export async function updateAdminProduct(id: string, data: Partial<{ name: string; description: string; category_id: string; image_url: string }>): Promise<AdminApiProduct> {
+export async function updateAdminProduct(id: string, data: Partial<{ name: string; description: string; category_id: string; thumbnail_url: string; status: string; is_featured: boolean; slug: string; }>): Promise<AdminApiProduct> {
   const res = await api.patch<{ success: boolean; data: AdminApiProduct }>(`/admin/products/${id}`, data);
   return res.data.data;
 }
@@ -137,11 +141,11 @@ export async function fetchAdminVariants(productId: string): Promise<ApiVariant[
   const res = await api.get<{ success: boolean; data: ApiVariant[] }>(`/admin/variants/${productId}`);
   return res.data.data;
 }
-export async function createAdminVariant(data: { product_id: string; variant_name: string; price: number; type: 'account' | 'family' }): Promise<ApiVariant> {
+export async function createAdminVariant(data: { product_id: string; variant_name: string; price: number; type: 'account' | 'family'; duration_days: number; }): Promise<ApiVariant> {
   const res = await api.post<{ success: boolean; data: ApiVariant }>('/admin/variants', data);
   return res.data.data;
 }
-export async function updateAdminVariant(id: string, data: Partial<{ variant_name: string; price: number; type: 'account' | 'family' }>): Promise<ApiVariant> {
+export async function updateAdminVariant(id: string, data: Partial<{ variant_name: string; price: number; type: 'account' | 'family'; duration_days: number; }>): Promise<ApiVariant> {
   const res = await api.patch<{ success: boolean; data: ApiVariant }>(`/admin/variants/${id}`, data);
   return res.data.data;
 }

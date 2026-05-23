@@ -297,11 +297,15 @@ router.get('/products', async (req, res) => {
 });
 
 router.post('/products', async (req, res) => {
-  const { name, description, category_id, image_url } = req.body;
+  const { name, description, category_id, thumbnail_url, status, is_featured, slug } = req.body;
   if (!name || !category_id) return res.status(400).json({ success: false, error: 'Name and Category ID are required' });
   try {
     const db = getSupabaseAdmin();
-    const { data, error } = await db.from('products').insert({ name, description, category_id, image_url }).select().single();
+    // Default slug if not provided
+    const finalSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const { data, error } = await db.from('products').insert({ 
+      name, description, category_id, thumbnail_url, status: status || 'visible', is_featured: is_featured || false, slug: finalSlug 
+    }).select().single();
     if (error) throw error;
     res.status(201).json({ success: true, data });
   } catch (err) {
@@ -349,13 +353,15 @@ router.get('/variants/:product_id', async (req, res) => {
 });
 
 router.post('/variants', async (req, res) => {
-  const { product_id, variant_name, price, type } = req.body;
+  const { product_id, variant_name, price, type, duration_days } = req.body;
   if (!product_id || !variant_name || price === undefined || !type) {
     return res.status(400).json({ success: false, error: 'Missing required fields' });
   }
   try {
     const db = getSupabaseAdmin();
-    const { data, error } = await db.from('product_variants').insert({ product_id, variant_name, price, type }).select().single();
+    const { data, error } = await db.from('product_variants').insert({ 
+      product_id, variant_name, price, type, duration_days: duration_days || 30 
+    }).select().single();
     if (error) throw error;
     res.status(201).json({ success: true, data });
   } catch (err) {

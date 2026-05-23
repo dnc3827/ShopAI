@@ -11,6 +11,7 @@ import {
 import { Button } from '../ui/Button';
 import { Card, CardBody } from '../ui/Card';
 import { Title } from '../ui/Typography';
+import { RichTextEditor } from './RichTextEditor';
 
 export const ProductCRUD: React.FC = () => {
   const [categories, setCategories] = useState<ApiCategory[]>([]);
@@ -280,7 +281,7 @@ const ProductModal: React.FC<{ categories: ApiCategory[], onClose: () => void, o
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Mô tả</label>
-            <textarea value={desc} onChange={e => setDesc(e.target.value)} className="w-full border p-2 rounded-lg h-24" />
+            <RichTextEditor value={desc} onChange={setDesc} />
           </div>
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>Hủy</Button>

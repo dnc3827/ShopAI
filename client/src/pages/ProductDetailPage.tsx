@@ -135,22 +135,27 @@ export const ProductDetailPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="mb-12">
+            <div className="mb-12">
             {category && (
               <Label className="text-primary font-bold tracking-wider uppercase mb-2 block">
                 {category.name}
               </Label>
             )}
             <Headline className="mb-6">{product.name}</Headline>
-            <div className="prose prose-slate max-w-none">
-              <p className="text-lg text-slate-600 leading-relaxed">{product.description}</p>
-              <h3 className="text-xl font-bold text-slate-900 mt-8 mb-4">Thông tin chi tiết</h3>
-              <ul className="mt-4 space-y-2">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" /> Giao hàng tự động 100% sau khi thanh toán</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" /> Bảo hành 1 đổi 1 trong thời gian sử dụng</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" /> Hỗ trợ kỹ thuật qua Telegram</li>
-              </ul>
-            </div>
+            {product.description ? (
+              <div
+                className="prose prose-slate max-w-none text-slate-600"
+                dangerouslySetInnerHTML={{ __html: product.description }}
+              />
+            ) : (
+              <p className="text-lg text-slate-600 leading-relaxed">Chưa có mô tả.</p>
+            )}
+            <h3 className="text-xl font-bold text-slate-900 mt-8 mb-4">Thông tin chi tiết</h3>
+            <ul className="mt-4 space-y-2">
+              <li className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" /> Giao hàng tự động 100% sau khi thanh toán</li>
+              <li className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" /> Bảo hành 1 đổi 1 trong thời gian sử dụng</li>
+              <li className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" /> Hỗ trợ kỹ thuật qua Telegram</li>
+            </ul>
           </div>
 
           {/* FAQ Section */}

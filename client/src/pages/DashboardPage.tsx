@@ -16,6 +16,7 @@ interface PurchasedItem {
   pass: string;
   link: string | null;
   created_at: string;
+  expiry_date: string | null;
 }
 
 interface OrderItem {
@@ -127,9 +128,17 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
         {/* Delivered account info */}
         {order.status === 'FULFILLED' && purchased && (
           <div className="mt-4 p-4 bg-green-50 rounded-xl border border-green-100 space-y-2">
-            <p className="text-xs font-semibold text-green-700 uppercase tracking-wide mb-3">
-              ✅ Thông tin tài khoản
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">
+                ✅ Thông tin tài khoản
+              </p>
+              {purchased.expiry_date && (() => {
+                const daysLeft = (new Date(purchased.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+                if (daysLeft <= 0) return <Badge variant="error">Hết hạn</Badge>;
+                if (daysLeft <= 3) return <Badge variant="warning">Sắp hết hạn</Badge>;
+                return <Badge variant="success">Còn hạn</Badge>;
+              })()}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
               <div>
                 <Label className="text-slate-500 text-xs">Email</Label>

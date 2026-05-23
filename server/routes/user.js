@@ -21,7 +21,7 @@ router.get('/orders', async (req, res) => {
           product_variants(variant_name, type),
           products(name)
         ),
-        purchased_items(id, email, pass, link, created_at)
+        purchased_items(id, email, pass, link, created_at, expiry_date)
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false });

@@ -135,7 +135,7 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
               {purchased.expiry_date && (() => {
                 const daysLeft = (new Date(purchased.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
                 if (daysLeft <= 0) return <Badge variant="error">Hết hạn</Badge>;
-                if (daysLeft <= 3) return <Badge variant="warning">Sắp hết hạn</Badge>;
+                if (daysLeft <= 7) return <Badge variant="warning">Sắp hết hạn</Badge>;
                 return <Badge variant="success">Còn hạn</Badge>;
               })()}
             </div>

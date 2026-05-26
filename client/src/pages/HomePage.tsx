@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchProducts } from '../lib/api';
 import type { ApiProduct } from '../lib/api';
+import { htmlToPlainText } from '../lib/text';
 import { Card, CardBody } from '../components/ui/Card';
 import { Headline, Title, Body, Label } from '../components/ui/Typography';
 import { Badge } from '../components/ui/Badge';
@@ -95,6 +96,7 @@ export const HomePage: React.FC = () => {
             // Optional: fallback image logic if product table doesn't have image_url
             // Currently ApiProduct interface doesn't have image_url, but we handle gracefully
             const imageUrl = (product as any).image_url;
+            const descriptionText = htmlToPlainText(product.description);
 
             return (
               <Link key={product.id} to={`/product/${product.id}`} className="group h-full">
@@ -124,7 +126,7 @@ export const HomePage: React.FC = () => {
                       </Label>
                     </div>
                     <Title className="text-lg mb-2 line-clamp-1 group-hover:text-primary transition-colors">{product.name}</Title>
-                    <Body className="text-sm line-clamp-2 mb-4 flex-grow">{product.description}</Body>
+                    <Body className="text-sm line-clamp-2 mb-4 flex-grow">{descriptionText}</Body>
                     
                     <div className="pt-4 border-t border-slate-100 mt-auto flex items-center justify-between">
                       <span className="text-sm text-slate-500">Giá từ</span>

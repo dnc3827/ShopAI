@@ -8,6 +8,31 @@ const router = Router();
 // All admin routes require admin role
 router.use(requireAdmin);
 
+// --- Helpers (used by PUT endpoints) ---
+
+const PRODUCT_STATUSES = new Set(['visible', 'hidden', 'coming_soon']);
+const VARIANT_TYPES = new Set(['account', 'family']);
+
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isUuid(value) {
+  return typeof value === 'string'
+    && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function toFiniteNumber(value) {
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function unexpectedKeys(obj, allowedKeys) {
+  if (!obj || typeof obj !== 'object') return [];
+  const allowed = new Set(allowedKeys);
+  return Object.keys(obj).filter(k => !allowed.has(k));
+}
+
 // ─── INVENTORY ──────────────────────────────────────────────
 
 router.get('/inventory/stats', async (_req, res) => {
@@ -313,6 +338,95 @@ router.post('/products', async (req, res) => {
   }
 });
 
+router.put('/products/:id', async (req, res) => {
+  // user_id must come from JWT, not request body
+  const actorUserId = req.user?.id;
+  const { id } = req.params;
+
+  const body = req.body || {};
+  const allowedKeys = ['name', 'slug', 'description', 'category_id', 'thumbnail_url', 'status', 'is_featured'];
+  const badKeys = unexpectedKeys(body, allowedKeys);
+  if (badKeys.length > 0) {
+    res.status(400).json({ success: false, error: `Unexpected fields: ${badKeys.join(', ')}` });
+    return;
+  }
+
+  const {
+    name,
+    slug,
+    description,
+    category_id,
+    thumbnail_url,
+    status,
+    is_featured,
+  } = body;
+
+  if (!actorUserId) {
+    res.status(401).json({ success: false, error: 'Missing user context' });
+    return;
+  }
+
+  if (!isNonEmptyString(name)) {
+    res.status(400).json({ success: false, error: 'name is required' });
+    return;
+  }
+  if (!isNonEmptyString(slug)) {
+    res.status(400).json({ success: false, error: 'slug is required' });
+    return;
+  }
+  if (!isUuid(category_id)) {
+    res.status(400).json({ success: false, error: 'category_id must be a valid UUID' });
+    return;
+  }
+  if (typeof status !== 'string' || !PRODUCT_STATUSES.has(status)) {
+    res.status(400).json({ success: false, error: 'status must be one of: visible, hidden, coming_soon' });
+    return;
+  }
+  if (typeof is_featured !== 'boolean') {
+    res.status(400).json({ success: false, error: 'is_featured must be a boolean' });
+    return;
+  }
+  if (description !== undefined && description !== null && typeof description !== 'string') {
+    res.status(400).json({ success: false, error: 'description must be a string' });
+    return;
+  }
+  if (thumbnail_url !== undefined && thumbnail_url !== null && typeof thumbnail_url !== 'string') {
+    res.status(400).json({ success: false, error: 'thumbnail_url must be a string' });
+    return;
+  }
+
+  try {
+    const db = getSupabaseAdmin();
+
+    const updates = {
+      name: name.trim(),
+      slug: slug.trim(),
+      description: (description ?? '') || '',
+      category_id,
+      thumbnail_url: (thumbnail_url ?? '') || null,
+      status,
+      is_featured,
+    };
+
+    const { data, error } = await db
+      .from('products')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!data) {
+      res.status(404).json({ success: false, error: 'Product not found' });
+      return;
+    }
+
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.patch('/products/:id', async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
@@ -364,6 +478,74 @@ router.post('/variants', async (req, res) => {
     }).select().single();
     if (error) throw error;
     res.status(201).json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.put('/variants/:id', async (req, res) => {
+  // user_id must come from JWT, not request body
+  const actorUserId = req.user?.id;
+  const { id } = req.params;
+
+  const body = req.body || {};
+  const allowedKeys = ['variant_name', 'price', 'type', 'duration_days'];
+  const badKeys = unexpectedKeys(body, allowedKeys);
+  if (badKeys.length > 0) {
+    res.status(400).json({ success: false, error: `Unexpected fields: ${badKeys.join(', ')}` });
+    return;
+  }
+
+  const { variant_name, price, type, duration_days } = body;
+
+  if (!actorUserId) {
+    res.status(401).json({ success: false, error: 'Missing user context' });
+    return;
+  }
+
+  if (!isNonEmptyString(variant_name)) {
+    res.status(400).json({ success: false, error: 'variant_name is required' });
+    return;
+  }
+  const parsedPrice = toFiniteNumber(price);
+  if (parsedPrice === null || parsedPrice < 0) {
+    res.status(400).json({ success: false, error: 'price must be a non-negative number' });
+    return;
+  }
+  if (typeof type !== 'string' || !VARIANT_TYPES.has(type)) {
+    res.status(400).json({ success: false, error: 'type must be one of: account, family' });
+    return;
+  }
+  const parsedDuration = toFiniteNumber(duration_days);
+  if (parsedDuration === null || !Number.isInteger(parsedDuration) || parsedDuration <= 0) {
+    res.status(400).json({ success: false, error: 'duration_days must be a positive integer' });
+    return;
+  }
+
+  try {
+    const db = getSupabaseAdmin();
+
+    const updates = {
+      variant_name: variant_name.trim(),
+      price: parsedPrice,
+      type,
+      duration_days: parsedDuration,
+    };
+
+    const { data, error } = await db
+      .from('product_variants')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!data) {
+      res.status(404).json({ success: false, error: 'Variant not found' });
+      return;
+    }
+
+    res.json({ success: true, data });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

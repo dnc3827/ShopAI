@@ -1,7 +1,7 @@
 // client/src/context/AuthContext.tsx
 // Global Supabase auth state — wraps entire app
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import api from '../lib/api';
@@ -27,12 +27,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const userIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      userIdRef.current = session?.user?.id ?? null;
       if (session?.user) fetchAdminStatus();
       else setIsLoading(false);
     });
@@ -42,8 +44,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // TOKEN_REFRESHED fires on every tab-focus; ignore it to prevent spurious re-renders
       if (event === 'TOKEN_REFRESHED') return;
 
+      const nextUserId = session?.user?.id ?? null;
+      if (event === 'SIGNED_IN' && nextUserId && nextUserId === userIdRef.current) {
+        setSession(session);
+        return;
+      }
+
       setSession(session);
       setUser(session?.user ?? null);
+      userIdRef.current = nextUserId;
       if (session?.user) fetchAdminStatus();
       else {
         setIsAdmin(false);
@@ -68,6 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     await supabase.auth.signOut();
     setIsAdmin(false);
+    userIdRef.current = null;
   };
 
   return (

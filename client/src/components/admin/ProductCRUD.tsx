@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Trash2, Settings, Loader2 } from 'lucide-react';
+import { Plus, X, Trash2, Settings, Loader2, Pencil } from 'lucide-react';
 import type {
   ApiCategory, AdminApiProduct, ApiVariant,
 } from '../../lib/api';
 import {
   fetchAdminCategories, createAdminCategory, deleteAdminCategory,
   fetchAdminProducts, createAdminProduct, deleteAdminProduct,
-  fetchAdminVariants, createAdminVariant, deleteAdminVariant
+  fetchAdminVariants, createAdminVariant, deleteAdminVariant,
+  replaceAdminProduct,
+  replaceAdminVariant
 } from '../../lib/api';
+import { htmlToPlainText } from '../../lib/text';
 import { Button } from '../ui/Button';
 import { Card, CardBody } from '../ui/Card';
 import { Title } from '../ui/Typography';
@@ -21,7 +24,15 @@ export const ProductCRUD: React.FC = () => {
   // Modals state
   const [showCatModal, setShowCatModal] = useState(false);
   const [showProdModal, setShowProdModal] = useState(false);
+  const [activeProductForEdit, setActiveProductForEdit] = useState<AdminApiProduct | null>(null);
   const [activeProductForVariants, setActiveProductForVariants] = useState<AdminApiProduct | null>(null);
+  const [toast, setToast] = useState('');
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(''), 2500);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -69,6 +80,14 @@ export const ProductCRUD: React.FC = () => {
 
   return (
     <div className="space-y-8">
+      {toast && (
+        <div className="fixed top-5 right-5 z-50" role="status" aria-live="polite" aria-atomic="true">
+          <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium">
+            {toast}
+          </div>
+        </div>
+      )}
+
       {/* Categories */}
       <Card>
         <CardBody className="p-0">
@@ -117,12 +136,15 @@ export const ProductCRUD: React.FC = () => {
                   <tr key={p.id} className="hover:bg-slate-50">
                     <td className="px-5 py-4">
                       <div className="font-medium text-slate-900">{p.name}</div>
-                      <div className="text-xs text-slate-500 line-clamp-1">{p.description}</div>
+                      <div className="text-xs text-slate-500 line-clamp-1">{htmlToPlainText(p.description)}</div>
                     </td>
                     <td className="px-5 py-4 text-slate-600">
                       {p.categories?.name || '—'}
                     </td>
                     <td className="px-5 py-4 text-right space-x-2">
+                      <Button size="sm" variant="outline" leftIcon={<Pencil className="w-4 h-4" />} onClick={() => setActiveProductForEdit(p)}>
+                        Chỉnh sửa
+                      </Button>
                       <Button size="sm" variant="outline" leftIcon={<Settings className="w-4 h-4" />} onClick={() => setActiveProductForVariants(p)}>
                         Cấu hình gói (Variants)
                       </Button>
@@ -147,6 +169,15 @@ export const ProductCRUD: React.FC = () => {
       )}
       {showProdModal && (
         <ProductModal categories={categories} onClose={() => setShowProdModal(false)} onSuccess={loadData} />
+      )}
+      {activeProductForEdit && (
+        <EditProductModal
+          product={activeProductForEdit}
+          categories={categories}
+          onClose={() => setActiveProductForEdit(null)}
+          onSuccess={loadData}
+          onToast={(msg) => setToast(msg)}
+        />
       )}
       {activeProductForVariants && (
         <VariantsModal product={activeProductForVariants} onClose={() => setActiveProductForVariants(null)} />
@@ -293,9 +324,117 @@ const ProductModal: React.FC<{ categories: ApiCategory[], onClose: () => void, o
   );
 };
 
+const EditProductModal: React.FC<{
+  product: AdminApiProduct;
+  categories: ApiCategory[];
+  onClose: () => void;
+  onSuccess: () => void;
+  onToast: (message: string) => void;
+}> = ({ product, categories, onClose, onSuccess, onToast }) => {
+  const [name, setName] = useState(product.name || '');
+  const [slug, setSlug] = useState(product.slug || '');
+  const [desc, setDesc] = useState(product.description || '');
+  const [catId, setCatId] = useState(product.category_id || '');
+  const [img, setImg] = useState(product.thumbnail_url || '');
+  const [status, setStatus] = useState(product.status || 'visible');
+  const [isFeatured, setIsFeatured] = useState(Boolean(product.is_featured));
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!window.confirm('Bạn có chắc chắn muốn lưu thay đổi?')) return;
+
+    setLoading(true);
+    try {
+      await replaceAdminProduct(product.id, {
+        name,
+        slug,
+        description: desc,
+        category_id: catId,
+        thumbnail_url: img,
+        status,
+        is_featured: isFeatured,
+      });
+      onToast('Cập nhật thành công');
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      alert(err.message || 'Lỗi cập nhật sản phẩm');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+      <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="flex justify-between p-5 border-b">
+          <Title className="text-lg">Chỉnh sửa sản phẩm</Title>
+          <button onClick={onClose}><X className="w-5 h-5 text-slate-400" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Tên sản phẩm *</label>
+              <input required value={name} onChange={e => setName(e.target.value)} className="w-full border p-2 rounded-lg" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Slug *</label>
+              <input required value={slug} onChange={e => setSlug(e.target.value)} className="w-full border p-2 rounded-lg" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Danh mục *</label>
+              <select required value={catId} onChange={e => setCatId(e.target.value)} className="w-full border p-2 rounded-lg">
+                <option value="">-- Chọn danh mục --</option>
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Trạng thái</label>
+              <select required value={status} onChange={e => setStatus(e.target.value)} className="w-full border p-2 rounded-lg">
+                <option value="visible">Hiển thị</option>
+                <option value="hidden">Ẩn</option>
+                <option value="coming_soon">Sắp ra mắt</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Hình ảnh (URL)</label>
+              <input value={img} onChange={e => setImg(e.target.value)} className="w-full border p-2 rounded-lg" placeholder="https://..." />
+            </div>
+            <div className="flex items-center mt-6">
+              <input type="checkbox" id="edit_is_featured" checked={isFeatured} onChange={e => setIsFeatured(e.target.checked)} className="mr-2 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+              <label htmlFor="edit_is_featured" className="text-sm font-medium">Sản phẩm nổi bật (Featured)</label>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Mô tả</label>
+            <RichTextEditor value={desc} onChange={setDesc} />
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>Hủy</Button>
+            <Button type="submit" isLoading={loading}>Lưu</Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const VariantsModal: React.FC<{ product: AdminApiProduct, onClose: () => void }> = ({ product, onClose }) => {
   const [variants, setVariants] = useState<ApiVariant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState('');
+  const [activeVariantForEdit, setActiveVariantForEdit] = useState<ApiVariant | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(''), 2500);
+    return () => clearTimeout(t);
+  }, [toast]);
   
   // Add form
   const [name, setName] = useState('');
@@ -351,6 +490,21 @@ const VariantsModal: React.FC<{ product: AdminApiProduct, onClose: () => void }>
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+      {toast && (
+        <div className="fixed top-5 right-5 z-[70]" role="status" aria-live="polite" aria-atomic="true">
+          <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium">
+            {toast}
+          </div>
+        </div>
+      )}
+      {activeVariantForEdit && (
+        <EditVariantModal
+          variant={activeVariantForEdit}
+          onClose={() => setActiveVariantForEdit(null)}
+          onSuccess={loadVariants}
+          onToast={(msg) => setToast(msg)}
+        />
+      )}
       <div className="bg-white rounded-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex justify-between p-5 border-b">
           <Title className="text-lg">Cấu hình gói - {product.name}</Title>
@@ -371,9 +525,14 @@ const VariantsModal: React.FC<{ product: AdminApiProduct, onClose: () => void }>
                       {v.type === 'family' ? ' Family' : ' Account'} • {v.duration_days} ngày
                     </div>
                   </div>
-                  <button onClick={() => handleDelete(v.id)} className="text-red-500 p-2 hover:bg-red-50 rounded-lg">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" leftIcon={<Pencil className="w-4 h-4" />} onClick={() => setActiveVariantForEdit(v)}>
+                      Chỉnh sửa
+                    </Button>
+                    <button onClick={() => handleDelete(v.id)} className="text-red-500 p-2 hover:bg-red-50 rounded-lg">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
               {variants.length === 0 && <p className="text-slate-500 text-center text-sm py-4">Chưa có gói nào.</p>}
@@ -404,6 +563,106 @@ const VariantsModal: React.FC<{ product: AdminApiProduct, onClose: () => void }>
             </form>
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const EditVariantModal: React.FC<{
+  variant: ApiVariant;
+  onClose: () => void;
+  onSuccess: () => void;
+  onToast: (message: string) => void;
+}> = ({ variant, onClose, onSuccess, onToast }) => {
+  const [variantName, setVariantName] = useState(variant.variant_name || '');
+  const [price, setPrice] = useState(String(variant.price ?? ''));
+  const [type, setType] = useState<'account' | 'family'>(variant.type || 'account');
+  const [duration, setDuration] = useState(String(variant.duration_days ?? 30));
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await replaceAdminVariant(variant.id, {
+        variant_name: variantName,
+        price: Number(price),
+        type,
+        duration_days: Number(duration),
+      });
+      onToast('Cập nhật thành công');
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      alert(err.message || 'Lỗi cập nhật gói');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] px-4">
+      <div className="bg-white rounded-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="flex justify-between p-5 border-b">
+          <Title className="text-lg">Chỉnh sửa gói</Title>
+          <button onClick={onClose}><X className="w-5 h-5 text-slate-400" /></button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Tên gói *</label>
+            <input
+              required
+              value={variantName}
+              onChange={e => setVariantName(e.target.value)}
+              className="w-full border p-2 rounded-lg"
+              placeholder="VD: 1 Tháng"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Giá (VNĐ) *</label>
+              <input
+                required
+                type="number"
+                value={price}
+                onChange={e => setPrice(e.target.value)}
+                className="w-full border p-2 rounded-lg"
+                min={0}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Số ngày *</label>
+              <input
+                required
+                type="number"
+                value={duration}
+                onChange={e => setDuration(e.target.value)}
+                className="w-full border p-2 rounded-lg"
+                min={1}
+                step={1}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Type</label>
+            <select
+              value={type}
+              onChange={e => setType(e.target.value as any)}
+              className="w-full border p-2 rounded-lg bg-white"
+            >
+              <option value="account">Account</option>
+              <option value="family">Family</option>
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={onClose}>Hủy</Button>
+            <Button type="submit" isLoading={loading}>Lưu</Button>
+          </div>
+        </form>
       </div>
     </div>
   );

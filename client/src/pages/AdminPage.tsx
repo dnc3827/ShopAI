@@ -259,7 +259,7 @@ export const AdminPage: React.FC = () => {
   }, [user, isAdmin, authLoading, navigate]);
 
   const loadData = async () => {
-    setIsLoading(true);
+    setIsLoading(stats.length === 0 && inventory.length === 0 && orders.length === 0);
     try {
       const [statsRes, invRes, ordersRes] = await Promise.all([
         api.get<{ success: boolean; data: InventoryStat[] }>('/admin/inventory/stats'),

@@ -132,6 +132,13 @@ export async function updateAdminProduct(id: string, data: Partial<{ name: strin
   const res = await api.patch<{ success: boolean; data: AdminApiProduct }>(`/admin/products/${id}`, data);
   return res.data.data;
 }
+export async function replaceAdminProduct(
+  id: string,
+  data: { name: string; description: string; category_id: string; thumbnail_url?: string; status: string; is_featured: boolean; slug: string; }
+): Promise<AdminApiProduct> {
+  const res = await api.put<{ success: boolean; data: AdminApiProduct }>(`/admin/products/${id}`, data);
+  return res.data.data;
+}
 export async function deleteAdminProduct(id: string): Promise<void> {
   await api.delete(`/admin/products/${id}`);
 }
@@ -147,6 +154,13 @@ export async function createAdminVariant(data: { product_id: string; variant_nam
 }
 export async function updateAdminVariant(id: string, data: Partial<{ variant_name: string; price: number; type: 'account' | 'family'; duration_days: number; }>): Promise<ApiVariant> {
   const res = await api.patch<{ success: boolean; data: ApiVariant }>(`/admin/variants/${id}`, data);
+  return res.data.data;
+}
+export async function replaceAdminVariant(
+  id: string,
+  data: { variant_name: string; price: number; type: 'account' | 'family'; duration_days: number; }
+): Promise<ApiVariant> {
+  const res = await api.put<{ success: boolean; data: ApiVariant }>(`/admin/variants/${id}`, data);
   return res.data.data;
 }
 export async function deleteAdminVariant(id: string): Promise<void> {

@@ -98,4 +98,31 @@ router.post('/create', requireAuth, async (req, res) => {
   }
 });
 
+// Protected: check order status
+router.get('/status/:orderCode', requireAuth, async (req, res) => {
+  const user = req.user;
+  const { orderCode } = req.params;
+
+  try {
+    const { data: order, error } = await supabaseAdmin
+      .from('orders')
+      .select('status, user_id')
+      .eq('order_code', orderCode)
+      .single();
+
+    if (error || !order) {
+      return res.status(404).json({ success: false, error: 'Order not found' });
+    }
+
+    if (order.user_id !== user.id) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
+    res.json({ success: true, data: { status: order.status } });
+  } catch (err) {
+    console.error('[getOrderStatus] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch order status' });
+  }
+});
+
 module.exports = router;

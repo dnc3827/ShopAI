@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { ShoppingCart } from 'lucide-react';
 import { fetchProducts } from '../lib/api';
 import type { ApiProduct } from '../lib/api';
-import { htmlToPlainText } from '../lib/text';
-import { Card, CardBody } from '../components/ui/Card';
-import { Headline, Title, Body, Label } from '../components/ui/Typography';
+import { Headline, Body } from '../components/ui/Typography';
 import { Badge } from '../components/ui/Badge';
 
 export const HomePage: React.FC = () => {
@@ -96,46 +95,53 @@ export const HomePage: React.FC = () => {
             // Optional: fallback image logic if product table doesn't have image_url
             // Currently ApiProduct interface doesn't have image_url, but we handle gracefully
             const imageUrl = (product as any).image_url;
-            const descriptionText = htmlToPlainText(product.description);
 
             return (
               <Link key={product.id} to={`/product/${product.id}`} className="group h-full">
-                <Card className="h-full hover:shadow-md transition-shadow border-slate-200 hover:border-primary/30 flex flex-col">
-                  <div className="aspect-[4/3] w-full overflow-hidden relative bg-slate-100">
+                <article className="relative flex h-full min-h-[188px] overflow-hidden rounded-[20px] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(15,23,42,0.14)]">
+                  <div className="relative w-[49%] flex-shrink-0 overflow-hidden bg-slate-200">
                     {imageUrl ? (
                       <img 
                         src={imageUrl} 
                         alt={product.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-200 font-medium">
+                      <div className="flex h-full w-full items-center justify-center bg-slate-200 text-lg font-semibold text-slate-400">
                         {product.name.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <div className="absolute top-3 left-3 flex flex-col gap-2">
-                      {isOutOfStock && <Badge variant="error">Hết hàng</Badge>}
-                      {isLowStock && <Badge variant="warning">Sắp hết hàng</Badge>}
+                    <div className="absolute left-5 top-5 flex flex-col gap-2">
+                      {isOutOfStock && <Badge variant="error" className="bg-red-50/95 text-red-700 shadow-sm">Hết hàng</Badge>}
+                      {isLowStock && <Badge variant="warning" className="bg-amber-50/95 text-amber-700 shadow-sm">Sắp hết hàng</Badge>}
                     </div>
                   </div>
                   
-                  <CardBody className="flex flex-col flex-grow p-5">
-                    <div className="mb-1">
-                      <Label className="text-xs text-primary font-semibold tracking-wider uppercase">
+                  <div className="flex min-w-0 flex-1 flex-col bg-white px-3.5 py-4 sm:px-4">
+                    <h2 className="mb-4 min-h-[52px] text-[18px] font-bold leading-[1.2] text-slate-950 transition-colors line-clamp-2 group-hover:text-primary">
+                      {product.name}
+                    </h2>
+
+                    <div className="mb-4 flex items-center gap-2 border-b border-slate-200 pb-3">
+                      <span className="min-w-0 rounded-full border border-slate-100 bg-white px-3 py-2 text-[10px] font-bold uppercase leading-tight text-slate-400 shadow-sm line-clamp-2">
                         {product.categories?.name || 'Danh mục khác'}
-                      </Label>
-                    </div>
-                    <Title className="text-lg mb-2 line-clamp-1 group-hover:text-primary transition-colors">{product.name}</Title>
-                    <Body className="text-sm line-clamp-2 mb-4 flex-grow">{descriptionText}</Body>
-                    
-                    <div className="pt-4 border-t border-slate-100 mt-auto flex items-center justify-between">
-                      <span className="text-sm text-slate-500">Giá từ</span>
-                      <span className="font-bold text-lg text-slate-900">
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(startingPrice)}
+                      </span>
+                      <span className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-slate-400">
+                        <ShoppingCart className="h-5 w-5 text-slate-400" />
+                        {totalInventory}
                       </span>
                     </div>
-                  </CardBody>
-                </Card>
+                    
+                    <div className="mt-auto flex items-end justify-between gap-3">
+                      <span className="text-[18px] font-extrabold leading-none text-slate-950">
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(startingPrice)}
+                      </span>
+                      <span className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-full bg-lime-500 text-white shadow-[0_0_0_8px_rgba(132,204,22,0.20),0_8px_18px_rgba(101,163,13,0.35)] transition-transform duration-300 group-hover:scale-105">
+                        <ShoppingCart className="h-7 w-7" />
+                      </span>
+                    </div>
+                  </div>
+                </article>
               </Link>
             );
           })}

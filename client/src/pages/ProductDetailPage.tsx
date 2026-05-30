@@ -130,9 +130,20 @@ export const ProductDetailPage: React.FC = () => {
         {/* Left Column */}
         <div className="lg:col-span-7 xl:col-span-8">
           <div className="aspect-[16/9] w-full rounded-custom overflow-hidden bg-slate-100 mb-8 border border-slate-200">
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-              <span className="text-6xl">🤖</span>
-            </div>
+            {product.thumbnail_url ? (
+              <img 
+                src={product.thumbnail_url} 
+                alt={product.name}
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/placeholder.png';
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+                <span className="text-6xl">🤖</span>
+              </div>
+            )}
           </div>
 
             <div className="mb-12">

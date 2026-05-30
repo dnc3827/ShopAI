@@ -18,7 +18,13 @@ const port = process.env.PORT || 5000;
 // ⚠️ Trust proxy for Railway deployment
 app.set('trust proxy', 1);
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      imgSrc: ["'self'", "data:", "https://*.supabase.co"]
+    }
+  }
+}));
 app.use(compression());
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',

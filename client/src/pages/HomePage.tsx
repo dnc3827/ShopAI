@@ -91,10 +91,8 @@ export const HomePage: React.FC = () => {
             const isLowStock = totalInventory > 0 && totalInventory < 5;
             const isOutOfStock = totalInventory === 0;
 
-            // Optional: fallback image logic if product table doesn't have image_url
-            // Currently ApiProduct interface doesn't have image_url, but we handle gracefully
-            const imageUrl = (product as any).image_url;
-
+            const imageUrl = product.thumbnail_url;
+            console.log('thumbnail_url:', product.thumbnail_url);
             return (
               <Link key={product.id} to={`/product/${product.id}`} className="group h-full">
                 <article className="relative flex h-full min-h-[188px] overflow-hidden rounded-[20px] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(15,23,42,0.14)] sm:min-h-[202px]">
@@ -104,6 +102,9 @@ export const HomePage: React.FC = () => {
                         src={imageUrl} 
                         alt={product.name} 
                         className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/placeholder.png';
+                        }}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-slate-200 text-lg font-semibold text-slate-400">

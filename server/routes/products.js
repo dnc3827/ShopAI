@@ -4,6 +4,12 @@ const { getSupabaseAdmin } = require('../middleware/auth');
 
 const router = Router();
 
+// routes/products.js
+const { Router } = require('express');
+const { getSupabaseAdmin } = require('../middleware/auth');
+
+const router = Router();
+
 router.get('/', async (_req, res) => {
   try {
     const db = getSupabaseAdmin();
@@ -11,7 +17,7 @@ router.get('/', async (_req, res) => {
     const { data: products, error: productsError } = await db
       .from('products')
       .select(`
-        id, name, description, category_id,
+        id, name, description, category_id, thumbnail_url,
         categories ( id, name, slug ),
         product_variants (
           id, variant_name, price, type
@@ -20,6 +26,8 @@ router.get('/', async (_req, res) => {
       .order('created_at', { ascending: false });
 
     if (productsError) throw productsError;
+
+    console.log('First product:', JSON.stringify(products?.[0]));
 
     // Get live inventory counts per variant (count AVAILABLE items only)
     const variantIds = (products || [])
@@ -62,14 +70,12 @@ router.get('/:id', async (req, res) => {
     const { data: product, error } = await db
       .from('products')
       .select(`
-        id, name, description, category_id,
+        id, name, description, category_id, thumbnail_url,
         categories ( id, name, slug ),
         product_variants ( id, variant_name, price, type )
       `)
       .eq('id', id)
       .single();
-
-    if (error || !product) {
       res.status(404).json({ success: false, error: 'Product not found' });
       return;
     }

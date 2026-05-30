@@ -122,7 +122,7 @@ export const HomePage: React.FC = () => {
                     </h2>
 
                     <div className="mb-8 border-b border-slate-200 pb-3">
-                      <span className="min-w-0 rounded-full border border-slate-100 bg-white px-3 py-2 text-[10px] font-bold uppercase leading-tight text-slate-400 shadow-sm line-clamp-2">
+                      <span className="inline-flex w-fit max-w-full items-center justify-center rounded-full border border-slate-100 bg-white px-3 py-2 text-center text-[10px] font-bold uppercase leading-tight text-slate-400 shadow-sm whitespace-normal">
                         {product.categories?.name || 'Danh mục khác'}
                       </span>
                     </div>

@@ -96,7 +96,7 @@ export const HomePage: React.FC = () => {
             return (
               <Link key={product.id} to={`/product/${product.id}`} className="group h-full">
                 <article className="relative flex h-full min-h-[188px] overflow-hidden rounded-[20px] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(15,23,42,0.14)] sm:min-h-[202px]">
-                  <div className="relative w-[53%] flex-shrink-0 overflow-hidden bg-slate-200">
+                  <div className="relative w-[38%] flex-shrink-0 overflow-hidden bg-slate-50">
                     {imageUrl ? (
                       <img 
                         src={imageUrl} 
@@ -107,23 +107,23 @@ export const HomePage: React.FC = () => {
                         }}
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-slate-200 text-lg font-semibold text-slate-400">
+                      <div className="flex h-full w-full items-center justify-center bg-slate-50 text-lg font-semibold text-slate-400">
                         {product.name.charAt(0).toUpperCase()}
                       </div>
                     )}
                     <div className="absolute left-5 top-5 flex flex-col gap-2">
-                      {isOutOfStock && <Badge variant="error" className="bg-red-50/95 text-red-700 shadow-sm">Hết hàng</Badge>}
-                      {isLowStock && <Badge variant="warning" className="bg-amber-50/95 text-amber-700 shadow-sm">Sắp hết hàng</Badge>}
+                      {isOutOfStock && <Badge variant="error" className="bg-red-50/95 text-red-700 shadow-sm px-2 py-1">Hết hàng</Badge>}
+                      {isLowStock && <Badge variant="warning" className="bg-amber-50/95 text-amber-700 shadow-sm px-2 py-1">Sắp hết hàng</Badge>}
                     </div>
                   </div>
                   
-                  <div className="flex min-w-0 flex-1 flex-col bg-white px-4 py-5">
-                    <h2 className="mb-7 min-h-[52px] text-[18px] font-bold leading-[1.2] text-slate-950 transition-colors line-clamp-2 group-hover:text-primary">
+                  <div className="flex min-w-0 flex-1 flex-col gap-2 bg-white px-4 py-5">
+                    <h2 className="min-h-[52px] text-[18px] font-bold leading-[1.2] text-slate-800 transition-colors line-clamp-2 group-hover:text-primary">
                       {product.name}
                     </h2>
 
-                    <div className="mb-8 border-b border-slate-200 pb-3">
-                      <span className="inline-flex w-fit max-w-full items-center justify-center rounded-full border border-slate-100 bg-white px-3 py-2 text-center text-[10px] font-bold uppercase leading-tight text-slate-400 shadow-sm whitespace-normal">
+                    <div>
+                      <span className="inline-flex w-fit max-w-full items-center justify-center rounded-md bg-slate-100 px-2 py-0.5 text-center text-xs font-bold uppercase leading-tight text-slate-600 shadow-sm whitespace-normal">
                         {product.categories?.name || 'Danh mục khác'}
                       </span>
                     </div>

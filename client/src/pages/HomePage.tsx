@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart } from 'lucide-react';
 import { fetchProducts } from '../lib/api';
 import type { ApiProduct } from '../lib/api';
 import { Headline, Body } from '../components/ui/Typography';
@@ -98,8 +97,8 @@ export const HomePage: React.FC = () => {
 
             return (
               <Link key={product.id} to={`/product/${product.id}`} className="group h-full">
-                <article className="relative flex h-full min-h-[188px] overflow-hidden rounded-[20px] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(15,23,42,0.14)]">
-                  <div className="relative w-[49%] flex-shrink-0 overflow-hidden bg-slate-200">
+                <article className="relative flex h-full min-h-[188px] overflow-hidden rounded-[20px] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(15,23,42,0.14)] sm:min-h-[202px]">
+                  <div className="relative w-[53%] flex-shrink-0 overflow-hidden bg-slate-200">
                     {imageUrl ? (
                       <img 
                         src={imageUrl} 
@@ -117,27 +116,20 @@ export const HomePage: React.FC = () => {
                     </div>
                   </div>
                   
-                  <div className="flex min-w-0 flex-1 flex-col bg-white px-3.5 py-4 sm:px-4">
-                    <h2 className="mb-4 min-h-[52px] text-[18px] font-bold leading-[1.2] text-slate-950 transition-colors line-clamp-2 group-hover:text-primary">
+                  <div className="flex min-w-0 flex-1 flex-col bg-white px-4 py-5">
+                    <h2 className="mb-7 min-h-[52px] text-[18px] font-bold leading-[1.2] text-slate-950 transition-colors line-clamp-2 group-hover:text-primary">
                       {product.name}
                     </h2>
 
-                    <div className="mb-4 flex items-center gap-2 border-b border-slate-200 pb-3">
+                    <div className="mb-8 border-b border-slate-200 pb-3">
                       <span className="min-w-0 rounded-full border border-slate-100 bg-white px-3 py-2 text-[10px] font-bold uppercase leading-tight text-slate-400 shadow-sm line-clamp-2">
                         {product.categories?.name || 'Danh mục khác'}
                       </span>
-                      <span className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-slate-400">
-                        <ShoppingCart className="h-5 w-5 text-slate-400" />
-                        {totalInventory}
-                      </span>
                     </div>
                     
-                    <div className="mt-auto flex items-end justify-between gap-3">
+                    <div className="mt-auto">
                       <span className="text-[18px] font-extrabold leading-none text-slate-950">
                         {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(startingPrice)}
-                      </span>
-                      <span className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-full bg-lime-500 text-white shadow-[0_0_0_8px_rgba(132,204,22,0.20),0_8px_18px_rgba(101,163,13,0.35)] transition-transform duration-300 group-hover:scale-105">
-                        <ShoppingCart className="h-7 w-7" />
                       </span>
                     </div>
                   </div>

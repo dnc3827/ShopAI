@@ -1,14 +1,6 @@
-// routes/products.js
-const { Router } = require('express');
-const { getSupabaseAdmin } = require('../middleware/auth');
-
-const router = Router();
-
-// routes/products.js
-const { Router } = require('express');
-const { getSupabaseAdmin } = require('../middleware/auth');
-
-const router = Router();
+const { Router } = require('express')
+const { getSupabaseAdmin } = require('../middleware/auth')
+const router = Router()
 
 router.get('/', async (_req, res) => {
   try {
@@ -76,6 +68,8 @@ router.get('/:id', async (req, res) => {
       `)
       .eq('id', id)
       .single();
+
+    if (error || !product) {
       res.status(404).json({ success: false, error: 'Product not found' });
       return;
     }

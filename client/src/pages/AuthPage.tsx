@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { LogIn, UserPlus, ShoppingBag } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { Card, CardBody } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 
 type AuthMode = 'login' | 'register';
@@ -56,112 +55,110 @@ export const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-16 bg-surface">
+    <div className="min-h-screen flex items-center justify-center px-4 py-16 bg-slate-50">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 justify-center">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
+            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
               <ShoppingBag className="text-white w-6 h-6" />
             </div>
             <span className="font-bold text-2xl text-slate-900">Shop<span className="text-primary">AI</span></span>
           </Link>
-          <p className="text-slate-500 mt-2 text-sm">
+          <h1 className="text-slate-500 mt-3 text-sm font-medium">
             {mode === 'login' ? 'Đăng nhập để xem đơn hàng của bạn' : 'Tạo tài khoản mới'}
-          </p>
+          </h1>
         </div>
 
-        <Card className="shadow-xl border-slate-200">
-          <CardBody className="p-8">
-            {/* Mode Tabs */}
-            <div className="flex rounded-custom border border-slate-200 p-1 mb-8 bg-slate-50">
-              <button
-                onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); }}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
-                  mode === 'login' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <LogIn className="w-4 h-4 inline mr-1.5" />
-                Đăng nhập
-              </button>
-              <button
-                onClick={() => { setMode('register'); setError(''); setSuccessMsg(''); }}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
-                  mode === 'register' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <UserPlus className="w-4 h-4 inline mr-1.5" />
-                Đăng ký
-              </button>
+        <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 p-8">
+          {/* Mode Tabs */}
+          <div className="flex rounded-xl border border-slate-200 p-1 mb-8 bg-slate-50">
+            <button
+              onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); }}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                mode === 'login' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <LogIn className="w-4 h-4 inline mr-1.5" />
+              Đăng nhập
+            </button>
+            <button
+              onClick={() => { setMode('register'); setError(''); setSuccessMsg(''); }}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                mode === 'register' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <UserPlus className="w-4 h-4 inline mr-1.5" />
+              Đăng ký
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {mode === 'register' && (
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Họ và tên</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  placeholder="Nguyễn Văn A"
+                  required
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-slate-50/50"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-slate-50/50"
+              />
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {mode === 'register' && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Họ và tên</label>
-                  <input
-                    type="text"
-                    value={fullName}
-                    onChange={e => setFullName(e.target.value)}
-                    placeholder="Nguyễn Văn A"
-                    required
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-custom text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-                  />
-                </div>
-              )}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Mật khẩu</label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                minLength={6}
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-slate-50/50"
+              />
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-custom text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-                />
+            {error && (
+              <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm font-medium">
+                {error}
               </div>
+            )}
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Mật khẩu</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-custom text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-                />
+            {successMsg && (
+              <div className="p-4 bg-green-50 border border-green-100 rounded-xl text-green-700 text-sm font-medium">
+                {successMsg}
               </div>
+            )}
 
-              {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-custom text-red-700 text-sm">
-                  {error}
-                </div>
-              )}
-
-              {successMsg && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-custom text-green-700 text-sm">
-                  {successMsg}
-                </div>
-              )}
-
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full mt-2"
-                isLoading={isLoading}
-                leftIcon={!isLoading ? (mode === 'login' ? <LogIn className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />) : undefined}
-              >
-                {mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
-              </Button>
-            </form>
-          </CardBody>
-        </Card>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full mt-2"
+              isLoading={isLoading}
+              leftIcon={!isLoading ? (mode === 'login' ? <LogIn className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />) : undefined}
+            >
+              {mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
+            </Button>
+          </form>
+        </div>
 
         <p className="text-center text-sm text-slate-500 mt-6">
-          <Link to="/" className="hover:text-primary transition-colors">← Về trang chủ</Link>
+          <Link to="/" className="hover:text-primary transition-colors font-medium">← Về trang chủ</Link>
         </p>
       </div>
     </div>

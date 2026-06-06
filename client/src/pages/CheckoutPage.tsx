@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { CheckCircle2, Loader2, Package, XCircle, Clock } from 'lucide-react';
-import { Card, CardBody } from '../components/ui/Card';
-import { Headline, Body } from '../components/ui/Typography';
 import { Button } from '../components/ui/Button';
 import api from '../lib/api';
 
@@ -67,90 +65,88 @@ export const CheckoutSuccessPage: React.FC = () => {
   const progress = Math.min((attempt / POLL_MAX_ATTEMPTS) * 100, 100);
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-16 bg-surface">
-      <Card className="max-w-lg w-full shadow-xl border-slate-200">
-        <CardBody className="p-10 text-center">
-          {/* Status Icon */}
-          <div className="mb-6">
-            {status === 'FULFILLED' ? (
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto animate-bounce-once">
-                <CheckCircle2 className="w-12 h-12 text-success" />
-              </div>
-            ) : status === 'CANCELLED' ? (
-              <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-                <XCircle className="w-12 h-12 text-error" />
-              </div>
-            ) : status === 'PAID' ? (
-              <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
-                <Clock className="w-12 h-12 text-amber-500" />
-              </div>
-            ) : (
-              <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto">
-                <Loader2 className="w-12 h-12 text-primary animate-spin" />
-              </div>
-            )}
-          </div>
-
-          {/* Title */}
-          {status === 'FULFILLED' && (
-            <>
-              <Headline className="mb-2 text-success">Giao hàng thành công!</Headline>
-              <Body className="mb-6 text-slate-600">
-                Tài khoản của bạn đã sẵn sàng. Đang chuyển đến trang đơn hàng...
-              </Body>
-            </>
-          )}
-          {status === 'PAID' && (
-            <>
-              <Headline className="mb-2">Thanh toán đã xác nhận</Headline>
-              <Body className="mb-6 text-slate-600">
-                Đơn hàng đang được xử lý. Kiểm tra <strong>Đơn hàng của tôi</strong> để xem kết quả.
-                Nếu là gói Family, admin sẽ xử lý trong 1–2 giờ.
-              </Body>
-            </>
-          )}
-          {(status === 'POLLING' || status === 'PENDING') && (
-            <>
-              <Headline className="mb-2">Đang xác nhận thanh toán...</Headline>
-              <Body className="mb-6 text-slate-600">
-                Hệ thống đang kiểm tra trạng thái. Vui lòng không đóng trang này.
-              </Body>
-            </>
-          )}
-
-          {/* Order code */}
-          {orderCode && (
-            <div className="mb-6 py-2 px-4 bg-slate-100 rounded-lg inline-block">
-              <span className="text-sm text-slate-500">Mã đơn: </span>
-              <span className="font-mono font-bold text-slate-900">{orderCode}</span>
+    <div className="min-h-screen flex items-center justify-center px-4 py-16 bg-slate-50">
+      <div className="max-w-lg w-full bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 p-10 text-center">
+        {/* Status Icon */}
+        <div className="mb-6">
+          {status === 'FULFILLED' ? (
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-12 h-12 text-green-600" />
+            </div>
+          ) : status === 'CANCELLED' ? (
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+              <XCircle className="w-12 h-12 text-red-500" />
+            </div>
+          ) : status === 'PAID' ? (
+            <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
+              <Clock className="w-12 h-12 text-amber-500" />
+            </div>
+          ) : (
+            <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto">
+              <Loader2 className="w-12 h-12 text-primary animate-spin" />
             </div>
           )}
+        </div>
 
-          {/* Progress bar (while polling) */}
-          {(status === 'POLLING' || status === 'PENDING') && (
-            <div className="mb-6 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="bg-primary h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          )}
+        {/* Title */}
+        {status === 'FULFILLED' && (
+          <>
+            <h2 className="text-2xl font-bold text-green-600 mb-2">Giao hàng thành công!</h2>
+            <p className="mb-6 text-slate-600">
+              Tài khoản của bạn đã sẵn sàng. Đang chuyển đến trang đơn hàng...
+            </p>
+          </>
+        )}
+        {status === 'PAID' && (
+          <>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Thanh toán đã xác nhận</h2>
+            <p className="mb-6 text-slate-600">
+              Đơn hàng đang được xử lý. Kiểm tra <strong>Đơn hàng của tôi</strong> để xem kết quả.
+              Nếu là gói Family, admin sẽ xử lý trong 1–2 giờ.
+            </p>
+          </>
+        )}
+        {(status === 'POLLING' || status === 'PENDING') && (
+          <>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Đang xác nhận thanh toán...</h2>
+            <p className="mb-6 text-slate-600">
+              Hệ thống đang kiểm tra trạng thái. Vui lòng không đóng trang này.
+            </p>
+          </>
+        )}
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link to="/dashboard">
-              <Button size="lg" leftIcon={<Package className="w-5 h-5" />}>
-                Xem đơn hàng của tôi
-              </Button>
-            </Link>
-            <Link to="/">
-              <Button size="lg" variant="outline">
-                Tiếp tục mua sắm
-              </Button>
-            </Link>
+        {/* Order code */}
+        {orderCode && (
+          <div className="mb-6 py-2.5 px-5 bg-slate-50 rounded-xl inline-block border border-slate-100">
+            <span className="text-sm text-slate-500">Mã đơn: </span>
+            <span className="font-mono font-bold text-slate-900">{orderCode}</span>
           </div>
-        </CardBody>
-      </Card>
+        )}
+
+        {/* Progress bar (while polling) */}
+        {(status === 'POLLING' || status === 'PENDING') && (
+          <div className="mb-6 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+            <div
+              className="bg-primary h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link to="/dashboard">
+            <Button size="lg" leftIcon={<Package className="w-5 h-5" />}>
+              Xem đơn hàng của tôi
+            </Button>
+          </Link>
+          <Link to="/">
+            <Button size="lg" variant="outline">
+              Tiếp tục mua sắm
+            </Button>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 };
@@ -160,27 +156,25 @@ export const CheckoutCancelPage: React.FC = () => {
   const orderCode = searchParams.get('orderCode');
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-16 bg-surface">
-      <Card className="max-w-lg w-full shadow-xl border-slate-200">
-        <CardBody className="p-10 text-center">
-          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <XCircle className="w-12 h-12 text-slate-400" />
+    <div className="min-h-screen flex items-center justify-center px-4 py-16 bg-slate-50">
+      <div className="max-w-lg w-full bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 p-10 text-center">
+        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <XCircle className="w-12 h-12 text-slate-400" />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-900 mb-3">Thanh toán bị huỷ</h2>
+        {orderCode && (
+          <div className="mb-4 py-2.5 px-5 bg-slate-50 rounded-xl inline-block border border-slate-100">
+            <span className="text-sm text-slate-500">Mã đơn: </span>
+            <span className="font-mono font-bold text-slate-900">{orderCode}</span>
           </div>
-          <Headline className="mb-3">Thanh toán bị huỷ</Headline>
-          {orderCode && (
-            <div className="mb-4 py-2 px-4 bg-slate-100 rounded-lg inline-block">
-              <span className="text-sm text-slate-500">Mã đơn: </span>
-              <span className="font-mono font-bold text-slate-900">{orderCode}</span>
-            </div>
-          )}
-          <Body className="mb-8 text-slate-600">
-            Giao dịch đã bị huỷ. Đơn hàng chưa được thanh toán và không ảnh hưởng đến tài khoản của bạn.
-          </Body>
-          <Link to="/">
-            <Button size="lg">Quay về trang chủ</Button>
-          </Link>
-        </CardBody>
-      </Card>
+        )}
+        <p className="mb-8 text-slate-600 leading-relaxed">
+          Giao dịch đã bị huỷ. Đơn hàng chưa được thanh toán và không ảnh hưởng đến tài khoản của bạn.
+        </p>
+        <Link to="/">
+          <Button size="lg">Quay về trang chủ</Button>
+        </Link>
+      </div>
     </div>
   );
 };

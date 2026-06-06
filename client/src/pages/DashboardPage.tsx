@@ -3,10 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Package, User, Eye, EyeOff, Copy, CheckCheck, Loader2, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
-import { Card, CardBody } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
-import { Headline, Title, Body, Label } from '../components/ui/Typography';
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -103,8 +101,8 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
   const purchased = order.purchased_items?.[0];
 
   return (
-    <Card className="border-slate-200">
-      <CardBody className="p-5">
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
           <div>
             <p className="text-xs text-slate-500 mb-1">
@@ -118,7 +116,7 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="font-bold text-primary">
+            <span className="font-bold text-primary text-lg">
               {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item?.price || 0)}
             </span>
             <StatusBadge status={order.status} />
@@ -129,7 +127,7 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
         {order.status === 'FULFILLED' && purchased && (
           <div className="mt-4 p-4 bg-green-50 rounded-xl border border-green-100 space-y-2">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">
+              <p className="text-xs font-bold text-green-700 uppercase tracking-wider">
                 ✅ Thông tin tài khoản
               </p>
               {purchased.expiry_date && (() => {
@@ -139,23 +137,23 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
                 return <Badge variant="success">Còn hạn</Badge>;
               })()}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div>
-                <Label className="text-slate-500 text-xs">Email</Label>
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Email</span>
                 <div className="mt-1"><SecretCell value={purchased.email} /></div>
               </div>
               <div>
-                <Label className="text-slate-500 text-xs">Mật khẩu</Label>
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Mật khẩu</span>
                 <div className="mt-1"><SecretCell value={purchased.pass} /></div>
               </div>
               {purchased.link && (
                 <div className="sm:col-span-2">
-                  <Label className="text-slate-500 text-xs">Invite Link</Label>
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Invite Link</span>
                   <a
                     href={purchased.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1 flex items-center gap-1 text-primary text-sm hover:underline"
+                    className="mt-1 flex items-center gap-1 text-primary text-sm hover:underline font-medium"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     Mở link
@@ -169,13 +167,13 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
         {/* Family order waiting */}
         {order.status === 'PAID' && item?.product_variants?.type === 'family' && (
           <div className="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-100">
-            <p className="text-sm text-amber-700">
+            <p className="text-sm text-amber-700 font-medium">
               ⏳ Đơn Family đang được xử lý. Admin sẽ mời email <strong>{order.family_email_capture}</strong> trong 1-2 giờ.
             </p>
           </div>
         )}
-      </CardBody>
-    </Card>
+      </div>
+    </div>
   );
 };
 
@@ -224,78 +222,78 @@ export const DashboardPage: React.FC = () => {
   if (!user) return null;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-        <Headline className="text-2xl">Tài khoản của tôi</Headline>
-        <div className="flex items-center gap-3">
-          {isAdmin && (
-            <Link to="/admin">
-              <Button variant="outline" size="sm">Trang Admin</Button>
-            </Link>
-          )}
-          <Button variant="ghost" size="sm" onClick={signOut}>Đăng xuất</Button>
+    <div className="bg-slate-50 min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+          <h1 className="text-2xl font-bold text-slate-900">Tài khoản của tôi</h1>
+          <div className="flex items-center gap-3">
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="outline" size="sm">Trang Admin</Button>
+              </Link>
+            )}
+            <Button variant="ghost" size="sm" onClick={signOut}>Đăng xuất</Button>
+          </div>
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-200 mb-8">
-        {([['orders', 'Đơn hàng', Package], ['profile', 'Tài khoản', User]] as const).map(
-          ([key, label, Icon]) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
-                tab === key
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {label}
-              {key === 'orders' && orders.length > 0 && (
-                <span className="ml-1 bg-primary text-white text-xs px-1.5 py-0.5 rounded-full">
-                  {orders.length}
-                </span>
-              )}
-            </button>
-          )
-        )}
-      </div>
-
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        </div>
-      ) : (
-        <>
-          {/* Orders Tab */}
-          {tab === 'orders' && (
-            <div className="space-y-4">
-              {orders.length === 0 ? (
-                <div className="text-center py-20">
-                  <Package className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-                  <Title className="text-slate-400 text-lg">Chưa có đơn hàng nào</Title>
-                  <Body className="mt-2">
-                    <Link to="/" className="text-primary hover:underline">Mua sắm ngay →</Link>
-                  </Body>
-                </div>
-              ) : (
-                orders.map(order => <OrderCard key={order.id} order={order} />)
-              )}
-            </div>
+        {/* Tabs */}
+        <div className="flex border-b border-slate-200 mb-8">
+          {([['orders', 'Đơn hàng', Package], ['profile', 'Tài khoản', User]] as const).map(
+            ([key, label, Icon]) => (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                  tab === key
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {label}
+                {key === 'orders' && orders.length > 0 && (
+                  <span className="ml-1 bg-primary text-white text-xs px-1.5 py-0.5 rounded-full">
+                    {orders.length}
+                  </span>
+                )}
+              </button>
+            )
           )}
+        </div>
 
-          {/* Profile Tab */}
-          {tab === 'profile' && profile && (
-            <Card className="border-slate-200">
-              <CardBody className="p-6 space-y-5">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          </div>
+        ) : (
+          <>
+            {/* Orders Tab */}
+            {tab === 'orders' && (
+              <div className="space-y-4">
+                {orders.length === 0 ? (
+                  <div className="text-center py-20 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <Package className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+                    <p className="text-slate-400 text-lg font-semibold">Chưa có đơn hàng nào</p>
+                    <p className="mt-2 text-sm text-slate-500">
+                      <Link to="/" className="text-primary hover:underline font-medium">Mua sắm ngay →</Link>
+                    </p>
+                  </div>
+                ) : (
+                  orders.map(order => <OrderCard key={order.id} order={order} />)
+                )}
+              </div>
+            )}
+
+            {/* Profile Tab */}
+            {tab === 'profile' && profile && (
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary">
                     {profile.full_name?.[0]?.toUpperCase() || profile.email[0].toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-semibold text-xl text-slate-900">{profile.full_name || 'Người dùng'}</p>
-                    <p className="text-slate-500">{profile.email}</p>
+                    <p className="font-bold text-xl text-slate-900">{profile.full_name || 'Người dùng'}</p>
+                    <p className="text-slate-500 text-sm">{profile.email}</p>
                     {profile.is_admin && (
                       <Badge variant="warning" className="mt-1">Admin</Badge>
                     )}
@@ -303,21 +301,21 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 <div className="border-t border-slate-100 pt-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div>
-                    <Label className="text-slate-500 text-xs uppercase tracking-wide">Tham gia</Label>
-                    <p className="mt-1 font-medium text-slate-900">
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ngày tham gia</span>
+                    <p className="mt-1.5 font-semibold text-slate-900">
                       {new Date(profile.created_at).toLocaleDateString('vi-VN')}
                     </p>
                   </div>
                   <div>
-                    <Label className="text-slate-500 text-xs uppercase tracking-wide">Tổng đơn hàng</Label>
-                    <p className="mt-1 font-medium text-slate-900">{orders.length} đơn</p>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tổng đơn hàng</span>
+                    <p className="mt-1.5 font-semibold text-slate-900">{orders.length} đơn</p>
                   </div>
                 </div>
-              </CardBody>
-            </Card>
-          )}
-        </>
-      )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

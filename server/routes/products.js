@@ -9,7 +9,7 @@ router.get('/', async (_req, res) => {
     const { data: products, error: productsError } = await db
       .from('products')
       .select(`
-        id, name, description, category_id, thumbnail_url,
+        id, name, description, category_id, thumbnail_url, status,
         categories ( id, name, slug ),
         product_variants (
           id, variant_name, price, type
@@ -62,7 +62,7 @@ router.get('/:id', async (req, res) => {
     const { data: product, error } = await db
       .from('products')
       .select(`
-        id, name, description, category_id, thumbnail_url,
+        id, name, description, category_id, thumbnail_url, status,
         categories ( id, name, slug ),
         product_variants ( id, variant_name, price, type )
       `)

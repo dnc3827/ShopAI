@@ -37,6 +37,7 @@ export interface ApiProduct {
   description: string;
   category_id: string;
   thumbnail_url: string | null;
+  status?: string;
   categories: { id: string; name: string; slug: string } | null;
   product_variants: Array<{
     id: string;

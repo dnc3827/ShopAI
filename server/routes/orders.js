@@ -125,4 +125,48 @@ router.get('/status/:orderCode', requireAuth, async (req, res) => {
   }
 });
 
+// Protected: cancel a PENDING order (user closes QR modal)
+router.patch('/:orderCode/cancel', requireAuth, async (req, res) => {
+  const user = req.user;
+  const { orderCode } = req.params;
+
+  try {
+    const { data: order, error } = await supabaseAdmin
+      .from('orders')
+      .select('id, status, user_id')
+      .eq('order_code', orderCode)
+      .single();
+
+    if (error || !order) {
+      return res.status(404).json({ success: false, error: 'Order not found' });
+    }
+
+    if (order.user_id !== user.id) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
+    if (order.status !== 'PENDING') {
+      return res.status(400).json({ success: false, error: `Cannot cancel order with status: ${order.status}` });
+    }
+
+    const { data: cancelledOrder, error: cancelError } = await supabaseAdmin
+      .from('orders')
+      .update({ status: 'CANCELLED', updated_at: new Date().toISOString() })
+      .eq('id', order.id)
+      .eq('status', 'PENDING')
+      .select('id')
+      .single();
+
+    if (cancelError || !cancelledOrder) {
+      console.error('[cancelOrder] Update error:', cancelError);
+      return res.status(409).json({ success: false, error: 'Order status changed before cancellation' });
+    }
+
+    res.json({ success: true, message: 'Order cancelled' });
+  } catch (err) {
+    console.error('[cancelOrder] Error:', err);
+    res.status(500).json({ success: false, error: 'Failed to cancel order' });
+  }
+});
+
 module.exports = router;

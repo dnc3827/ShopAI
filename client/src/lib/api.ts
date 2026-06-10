@@ -65,6 +65,8 @@ export interface CreateOrderResponse {
   qrCode: string;
 }
 
+export type OrderStatus = 'PENDING' | 'PAID' | 'FULFILLED' | 'CANCELLED' | 'EXPIRED';
+
 export async function createOrder(params: {
   variantId: string;
   productId: string;
@@ -72,6 +74,19 @@ export async function createOrder(params: {
 }): Promise<CreateOrderResponse> {
   const res = await api.post<{ success: boolean; data: CreateOrderResponse }>('/orders/create', params);
   return res.data.data;
+}
+
+export async function cancelOrder(orderCode: string): Promise<void> {
+  await api.patch(`/orders/${orderCode}/cancel`);
+}
+
+export async function pollOrderStatus(orderCode: string): Promise<OrderStatus> {
+  const res = await api.get<{ success: boolean; data: { status: string } }>(`/orders/status/${orderCode}`);
+  return res.data.data.status as OrderStatus;
+}
+
+export async function getOrderStatus(orderCode: string): Promise<OrderStatus> {
+  return pollOrderStatus(orderCode);
 }
 
 // ---- Admin API functions ----

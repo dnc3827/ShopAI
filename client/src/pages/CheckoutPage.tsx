@@ -4,7 +4,7 @@ import { CheckCircle2, Loader2, Package, XCircle, Clock } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import api from '../lib/api';
 
-type OrderStatus = 'PENDING' | 'PAID' | 'FULFILLED' | 'CANCELLED' | 'POLLING';
+type OrderStatus = 'PENDING' | 'PAID' | 'FULFILLED' | 'CANCELLED' | 'EXPIRED' | 'POLLING';
 
 const POLL_INTERVAL_MS = 3000;
 const POLL_MAX_ATTEMPTS = 20; // 20 × 3s = 60s
@@ -38,7 +38,7 @@ export const CheckoutSuccessPage: React.FC = () => {
           return;
         }
 
-        if (s === 'CANCELLED' || attempts >= POLL_MAX_ATTEMPTS) {
+        if (s === 'CANCELLED' || s === 'EXPIRED' || attempts >= POLL_MAX_ATTEMPTS) {
           return; // Stop polling
         }
       } catch {
@@ -73,7 +73,7 @@ export const CheckoutSuccessPage: React.FC = () => {
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-12 h-12 text-green-600" />
             </div>
-          ) : status === 'CANCELLED' ? (
+          ) : status === 'CANCELLED' || status === 'EXPIRED' ? (
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
               <XCircle className="w-12 h-12 text-red-500" />
             </div>
@@ -103,6 +103,16 @@ export const CheckoutSuccessPage: React.FC = () => {
             <p className="mb-6 text-slate-600">
               Đơn hàng đang được xử lý. Kiểm tra <strong>Đơn hàng của tôi</strong> để xem kết quả.
               Nếu là gói Family, admin sẽ xử lý trong 1–2 giờ.
+            </p>
+          </>
+        )}
+        {(status === 'CANCELLED' || status === 'EXPIRED') && (
+          <>
+            <h2 className="text-2xl font-bold text-red-600 mb-2">
+              {status === 'EXPIRED' ? 'Đơn hàng đã hết hạn' : 'Thanh toán bị huỷ'}
+            </h2>
+            <p className="mb-6 text-slate-600">
+              Đơn hàng chưa được thanh toán. Bạn có thể quay lại sản phẩm và tạo đơn thanh toán mới.
             </p>
           </>
         )}

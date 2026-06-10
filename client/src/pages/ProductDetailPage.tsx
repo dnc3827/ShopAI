@@ -1,14 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ChevronRight, CheckCircle2, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ChevronRight, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { fetchProductById, createOrder } from '../lib/api';
 import type { ApiProduct } from '../lib/api';
 import { Badge } from '../components/ui/Badge';
+import { QRPaymentModal } from '../components/ui/QRPaymentModal';
 
 type Variant = ApiProduct['product_variants'][0];
 
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState<ApiProduct | null>(null);
   const [isLoadingProduct, setIsLoadingProduct] = useState(true);
@@ -17,8 +20,12 @@ export const ProductDetailPage: React.FC = () => {
   const [familyEmailError, setFamilyEmailError] = useState('');
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
-  const [checkoutUrl, setCheckoutUrl] = useState('');
-  const checkoutRef = useRef<HTMLDivElement>(null);
+  const [successMsg, setSuccessMsg] = useState('');
+  const [qrModal, setQrModal] = useState<{
+    qrCode: string;
+    orderCode: string;
+    amount: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -38,7 +45,7 @@ export const ProductDetailPage: React.FC = () => {
       setSelectedVariant(product.product_variants[0]);
       setFamilyEmail('');
       setFamilyEmailError('');
-      setCheckoutUrl('');
+      setQrModal(null);
     }
   }, [product]);
 
@@ -67,8 +74,9 @@ export const ProductDetailPage: React.FC = () => {
     setSelectedVariant(variant);
     setFamilyEmail('');
     setFamilyEmailError('');
-    setCheckoutUrl('');
+    setQrModal(null);
     setCheckoutError('');
+    setSuccessMsg('');
   };
 
   const handleCheckout = async () => {
@@ -84,7 +92,7 @@ export const ProductDetailPage: React.FC = () => {
 
     setIsCheckingOut(true);
     setCheckoutError('');
-    setCheckoutUrl('');
+    setSuccessMsg('');
 
     try {
       const result = await createOrder({
@@ -93,9 +101,12 @@ export const ProductDetailPage: React.FC = () => {
         familyEmail: isFamilyVariant ? familyEmail : undefined,
       });
 
-      setCheckoutUrl(result.checkoutUrl);
-      // Scroll to checkout area
-      setTimeout(() => checkoutRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      // Open QR modal immediately
+      setQrModal({
+        qrCode: result.qrCode,
+        orderCode: result.orderCode,
+        amount: selectedVariant.price,
+      });
     } catch (err) {
       const error = err as Error;
       if (error.message?.includes('auth') || error.message?.includes('token')) {
@@ -106,6 +117,23 @@ export const ProductDetailPage: React.FC = () => {
     } finally {
       setIsCheckingOut(false);
     }
+  };
+
+  const handlePaymentSuccess = () => {
+    setQrModal(null);
+    setCheckoutError('');
+    setSuccessMsg('🎉 Thanh toán thành công! Tài khoản đã được giao. Đang chuyển đến đơn hàng...');
+    setTimeout(() => navigate('/dashboard'), 2500);
+  };
+
+  const handlePaymentError = (message: string) => {
+    setQrModal(null);
+    setSuccessMsg('');
+    setCheckoutError(message);
+  };
+
+  const handleModalClose = () => {
+    setQrModal(null);
   };
 
   return (
@@ -289,41 +317,31 @@ export const ProductDetailPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Checkout button */}
-                {!checkoutUrl ? (
-                  <button
-                    className={`w-full py-3 px-4 rounded-xl text-white font-semibold text-lg flex items-center justify-center gap-2 shadow-md transition-all ${
-                      isOutOfStock || !selectedVariant
-                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
-                        : 'bg-blue-600 hover:bg-blue-700'
-                    } ${isCheckingOut ? 'opacity-80 cursor-wait' : ''}`}
-                    onClick={handleCheckout}
-                    disabled={isOutOfStock || !selectedVariant || isCheckingOut}
-                  >
-                    {isCheckingOut && <Loader2 className="w-5 h-5 animate-spin" />}
-                    {isOutOfStock ? 'Tạm thời hết hàng' : 'Thanh toán ngay'}
-                  </button>
-                ) : (
-                  <a
-                    href={checkoutUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-green-600 text-white font-semibold text-lg hover:bg-green-700 transition-colors shadow-md"
-                  >
-                    <ExternalLink className="w-5 h-5" />
-                    Mở trang thanh toán PayOS
-                  </a>
-                )}
-
-                {/* PayOS QR hint */}
-                {checkoutUrl && (
-                  <div ref={checkoutRef} className="mt-4 text-center text-sm font-medium text-slate-500">
-                    Quét QR hoặc click link trên để thanh toán. Đơn sẽ được giao tự động sau khi xác nhận.
+                {/* Success message */}
+                {successMsg && (
+                  <div className="mb-4 flex items-start gap-2 text-sm text-green-700 bg-green-50 p-4 rounded-xl border border-green-100">
+                    <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                    <p className="font-medium">{successMsg}</p>
                   </div>
                 )}
 
+                {/* Checkout button */}
+                <button
+                  className={`w-full py-3 px-4 rounded-xl text-white font-semibold text-lg flex items-center justify-center gap-2 shadow-md transition-all ${
+                    isOutOfStock || !selectedVariant || !!successMsg
+                      ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  } ${isCheckingOut ? 'opacity-80 cursor-wait' : ''}`}
+                  onClick={handleCheckout}
+                  disabled={isOutOfStock || !selectedVariant || isCheckingOut || !!successMsg}
+                >
+                  {isCheckingOut && <Loader2 className="w-5 h-5 animate-spin" />}
+                  {isOutOfStock ? 'Tạm thời hết hàng' : 'Thanh toán ngay'}
+                </button>
+
+
                 {/* Family warning */}
-                {isFamilyVariant && !checkoutUrl && (
+                {isFamilyVariant && !successMsg && (
                   <p className="mt-5 text-xs text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-100 flex items-start gap-2 leading-relaxed">
                     <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     Gói Family xử lý thủ công (1-2 giờ). Admin sẽ mời email của bạn sau khi thanh toán.
@@ -334,6 +352,19 @@ export const ProductDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* QR Payment Modal */}
+      {qrModal && (
+        <QRPaymentModal
+          qrCode={qrModal.qrCode}
+          orderCode={qrModal.orderCode}
+          amount={qrModal.amount}
+          productName={product.name}
+          onSuccess={handlePaymentSuccess}
+          onError={handlePaymentError}
+          onClose={handleModalClose}
+        />
+      )}
     </div>
   );
 };

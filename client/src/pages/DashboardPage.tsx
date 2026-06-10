@@ -26,7 +26,7 @@ interface OrderItem {
 interface Order {
   id: string;
   order_code: string;
-  status: 'PENDING' | 'PAID' | 'FULFILLED' | 'CANCELLED';
+  status: 'PENDING' | 'PAID' | 'FULFILLED' | 'CANCELLED' | 'EXPIRED';
   family_email_capture: string | null;
   created_at: string;
   order_items: OrderItem[];
@@ -48,6 +48,7 @@ const STATUS_CONFIG = {
   PAID:      { label: 'Đã thanh toán',  variant: 'warning'  as const, cls: 'bg-amber-100 text-amber-700' },
   FULFILLED: { label: 'Đã giao',        variant: 'success'  as const, cls: 'bg-green-100 text-green-700' },
   CANCELLED: { label: 'Đã huỷ',         variant: 'error'    as const, cls: 'bg-red-100 text-red-600'    },
+  EXPIRED:   { label: 'Đã hết hạn',     variant: 'default'  as const, cls: 'bg-slate-200 text-slate-700' },
 };
 
 const StatusBadge: React.FC<{ status: Order['status'] }> = ({ status }) => {

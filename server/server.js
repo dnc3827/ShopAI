@@ -11,6 +11,7 @@ const webhookRoutes = require('./routes/webhook');
 const telegramRoutes = require('./routes/telegram');
 const adminRoutes = require('./routes/admin');
 const userRoutes = require('./routes/user');
+const { startCleanupJob } = require('./lib/cleanup.job');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -59,6 +60,7 @@ app.use((err, _req, res, _next) => {
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  startCleanupJob();
 });
 
 module.exports = app;

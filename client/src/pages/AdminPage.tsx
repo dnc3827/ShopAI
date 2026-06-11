@@ -342,9 +342,11 @@ export const AdminPage: React.FC = () => {
                             {s.available_count < 5 && <AlertTriangle className="w-4 h-4" />}
                             {s.available_count}
                           </span>
-                          {s.available_count < 5 && (
-                            <Badge variant="error" className="ml-2">Sắp hết</Badge>
-                          )}
+                          {s.available_count === 0 ? (
+                            <Badge variant="error" className="ml-2">Hết hàng</Badge>
+                          ) : s.available_count < 5 ? (
+                            <Badge variant="warning" className="ml-2">Sắp hết</Badge>
+                          ) : null}
                         </td>
                         <td className="px-5 py-4 text-center text-slate-500">{s.sold_count}</td>
                         <td className="px-5 py-4 text-right">
@@ -440,6 +442,7 @@ export const AdminPage: React.FC = () => {
                       PAID: 'bg-amber-100 text-amber-700',
                       FULFILLED: 'bg-green-100 text-green-700',
                       CANCELLED: 'bg-red-100 text-red-600',
+                      EXPIRED: 'bg-slate-200 text-slate-700',
                     };
                     return (
                       <tr key={order.id} className="hover:bg-slate-50">

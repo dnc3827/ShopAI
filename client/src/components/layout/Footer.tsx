@@ -1,6 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export const Footer: React.FC = () => {
+  const { isAdmin } = useAuth();
+
   return (
     <footer className="bg-white border-t border-slate-200 py-12 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,28 +17,29 @@ export const Footer: React.FC = () => {
           </div>
           
           <div>
-            <h3 className="font-semibold text-slate-900 mb-4">Sản phẩm</h3>
+            <h3 className="font-semibold text-slate-900 mb-4">Liên kết nhanh</h3>
             <ul className="space-y-2 text-sm text-slate-500">
-              <li><a href="#" className="hover:text-primary transition-colors">Tài khoản AI</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Tài khoản Giải trí</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Công cụ làm việc</a></li>
+              <li><Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link></li>
+              <li><Link to="/auth" className="hover:text-primary transition-colors">Đăng nhập / Đăng ký</Link></li>
+              {isAdmin && (
+                <li><Link to="/admin" className="hover:text-primary transition-colors">Quản trị hệ thống</Link></li>
+              )}
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold text-slate-900 mb-4">Hỗ trợ</h3>
             <ul className="space-y-2 text-sm text-slate-500">
-              <li><a href="#" className="hover:text-primary transition-colors">Hướng dẫn sử dụng</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Chính sách bảo hành</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Câu hỏi thường gặp</a></li>
+              <li><Link to="/policy" className="hover:text-primary transition-colors">Chính sách bảo hành</Link></li>
+              <li><Link to="/faq" className="hover:text-primary transition-colors">Câu hỏi thường gặp</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold text-slate-900 mb-4">Liên hệ</h3>
             <ul className="space-y-2 text-sm text-slate-500">
-              <li>Email: support@shopai.com</li>
-              <li>Telegram: @shopai_support</li>
+              <li>Email: <a href="mailto:support@shopai.com" className="hover:text-primary transition-colors">support@shopai.com</a></li>
+              <li>Telegram: <a href="https://t.me/shopai_support" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">@shopai_support</a></li>
             </ul>
           </div>
         </div>

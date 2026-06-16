@@ -15,3 +15,50 @@
 .btn-primary {
   @apply bg-primary text-white px-4 py-2 rounded-custom hover:bg-blue-600 transition-colors disabled:opacity-50;
 }
+
+/* Premium Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-featured-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+@keyframes shine-sweep {
+  0% {
+    left: -70%;
+  }
+  20%, 100% {
+    left: 150%;
+  }
+}
+
+.shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-effect::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -70%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent
+  );
+  transform: rotate(25deg);
+  pointer-events: none;
+  animation: shine-sweep 6s infinite ease-in-out;
+}
+

@@ -7,6 +7,9 @@ import { CheckoutSuccessPage, CheckoutCancelPage } from './pages/CheckoutPage';
 import { AuthPage } from './pages/AuthPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { AdminPage } from './pages/AdminPage';
+import { PolicyPage } from './pages/PolicyPage';
+import { FAQPage } from './pages/FAQPage';
+
 
 function App() {
   return (
@@ -21,6 +24,8 @@ function App() {
             <Route path="auth" element={<AuthPage />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="admin" element={<AdminPage />} />
+            <Route path="policy" element={<PolicyPage />} />
+            <Route path="faq" element={<FAQPage />} />
           </Route>
         </Routes>
       </Router>

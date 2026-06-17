@@ -38,6 +38,8 @@ export interface ApiProduct {
   category_id: string;
   thumbnail_url: string | null;
   status?: string;
+  is_featured?: boolean;
+  sold_count?: number;
   categories: { id: string; name: string; slug: string } | null;
   product_variants: Array<{
     id: string;

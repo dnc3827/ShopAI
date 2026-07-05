@@ -10,13 +10,12 @@ import {
   replaceAdminProduct,
   replaceAdminVariant
 } from '../../lib/api';
-import { htmlToPlainText } from '../../lib/text';
 import { Button } from '../ui/Button';
-import { Card, CardBody } from '../ui/Card';
 import { Title } from '../ui/Typography';
+import { htmlToPlainText } from '../../lib/text';
 import { RichTextEditor } from './RichTextEditor';
 
-export const ProductCRUD: React.FC = () => {
+export const ProductCRUD: React.FC<{ viewMode?: 'categories' | 'products' | 'variants' }> = ({ viewMode = 'products' }) => {
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [products, setProducts] = useState<AdminApiProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,93 +74,161 @@ export const ProductCRUD: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center p-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+    return (
+      <div className="flex justify-center p-12 bg-white rounded-2xl border border-slate-200/60 shadow-sm">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in duration-300">
       {toast && (
-        <div className="fixed top-5 right-5 z-50" role="status" aria-live="polite" aria-atomic="true">
-          <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium">
+        <div className="fixed top-5 right-5 z-50 animate-in fade-in slide-in-from-top-4 duration-200" role="status" aria-live="polite" aria-atomic="true">
+          <div className="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg text-sm font-semibold border border-slate-800">
             {toast}
           </div>
         </div>
       )}
 
-      {/* Categories */}
-      <Card>
-        <CardBody className="p-0">
+      {/* Categories View */}
+      {viewMode === 'categories' && (
+        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
           <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-            <Title className="text-lg">Danh mục sản phẩm</Title>
+            <h3 className="font-bold text-slate-950 text-base">Danh mục sản phẩm</h3>
             <Button size="sm" leftIcon={<Plus className="w-4 h-4" />} onClick={() => setShowCatModal(true)}>
               Thêm danh mục
             </Button>
           </div>
-          <div className="p-5">
-            <div className="flex flex-wrap gap-3">
+          <div className="p-6">
+            <div className="flex flex-wrap gap-2.5">
               {categories.map(c => (
-                <div key={c.id} className="bg-slate-100 px-4 py-2 rounded-full flex items-center gap-3">
-                  <span className="font-medium text-slate-800">{c.name}</span>
-                  <button onClick={() => handleDeleteCategory(c.id)} className="text-slate-400 hover:text-red-500">
+                <div key={c.id} className="bg-slate-50 border border-slate-200/50 pl-4 pr-2 py-2 rounded-xl flex items-center gap-3 hover:bg-slate-100/50 transition-colors">
+                  <span className="font-semibold text-slate-700 text-sm">{c.name}</span>
+                  <button onClick={() => handleDeleteCategory(c.id)} className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               ))}
-              {categories.length === 0 && <span className="text-slate-400 text-sm">Chưa có danh mục nào</span>}
+              {categories.length === 0 && (
+                <div className="text-slate-400 text-sm py-4 w-full text-center">Chưa có danh mục nào</div>
+              )}
             </div>
           </div>
-        </CardBody>
-      </Card>
+        </div>
+      )}
 
-      {/* Products */}
-      <Card>
-        <CardBody className="p-0">
+      {/* Products View */}
+      {viewMode === 'products' && (
+        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
           <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-            <Title className="text-lg">Sản phẩm</Title>
+            <h3 className="font-bold text-slate-950 text-base">Sản phẩm hiện có</h3>
             <Button size="sm" leftIcon={<Plus className="w-4 h-4" />} onClick={() => setShowProdModal(true)}>
               Thêm sản phẩm
             </Button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50">
+              <thead className="bg-slate-50/75 border-b border-slate-100 text-slate-500 font-semibold text-xs uppercase tracking-wider">
                 <tr>
-                  <th className="px-5 py-3 text-left text-slate-500 font-medium">Tên sản phẩm</th>
-                  <th className="px-5 py-3 text-left text-slate-500 font-medium">Danh mục</th>
-                  <th className="px-5 py-3 text-right text-slate-500 font-medium">Hành động</th>
+                  <th className="px-6 py-3.5 text-left font-semibold">Tên sản phẩm</th>
+                  <th className="px-6 py-3.5 text-left font-semibold">Danh mục</th>
+                  <th className="px-6 py-3.5 text-right font-semibold">Hành động</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {products.map(p => (
-                  <tr key={p.id} className="hover:bg-slate-50">
-                    <td className="px-5 py-4">
-                      <div className="font-medium text-slate-900">{p.name}</div>
-                      <div className="text-xs text-slate-500 line-clamp-1">{htmlToPlainText(p.description)}</div>
+                  <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-slate-900">{p.name}</div>
+                      <div className="text-xs text-slate-500 mt-0.5 line-clamp-1 max-w-[400px]">{htmlToPlainText(p.description)}</div>
                     </td>
-                    <td className="px-5 py-4 text-slate-600">
-                      {p.categories?.name || '—'}
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/40">
+                        {p.categories?.name || '—'}
+                      </span>
                     </td>
-                    <td className="px-5 py-4 text-right space-x-2">
+                    <td className="px-6 py-4 text-right space-x-1.5">
                       <Button size="sm" variant="outline" leftIcon={<Pencil className="w-4 h-4" />} onClick={() => setActiveProductForEdit(p)}>
-                        Chỉnh sửa
+                        Sửa
                       </Button>
                       <Button size="sm" variant="outline" leftIcon={<Settings className="w-4 h-4" />} onClick={() => setActiveProductForVariants(p)}>
-                        Cấu hình gói (Variants)
+                        Gói giá
                       </Button>
-                      <button onClick={() => handleDeleteProduct(p.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                      <button onClick={() => handleDeleteProduct(p.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all inline-flex items-center justify-center">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
                 ))}
                 {products.length === 0 && (
-                  <tr><td colSpan={3} className="px-5 py-10 text-center text-slate-400">Chưa có sản phẩm nào</td></tr>
+                  <tr>
+                    <td colSpan={3} className="px-6 py-12 text-center text-slate-400 font-medium">
+                      Chưa có sản phẩm nào
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
           </div>
-        </CardBody>
-      </Card>
+
+          {/* Pagination */}
+          <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end items-center gap-2 text-xs font-semibold text-slate-500">
+            <span>Hiển thị 1 - {products.length} của {products.length}</span>
+            <div className="flex gap-1 ml-4">
+              <button disabled className="px-2.5 py-1.5 border border-slate-200 bg-white rounded-md opacity-50 cursor-not-allowed">Trước</button>
+              <button disabled className="px-2.5 py-1.5 border border-slate-200 bg-white rounded-md opacity-50 cursor-not-allowed">Sau</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Variants View */}
+      {viewMode === 'variants' && (
+        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-slate-100">
+            <h3 className="font-bold text-slate-950 text-base">Cấu hình gói giá theo sản phẩm</h3>
+            <p className="text-xs text-slate-500 mt-1 font-medium">Chọn một sản phẩm dưới đây để cấu hình chi tiết các gói tài khoản/family.</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50/75 border-b border-slate-100 text-slate-500 font-semibold text-xs uppercase tracking-wider">
+                <tr>
+                  <th className="px-6 py-3.5 text-left font-semibold">Tên sản phẩm</th>
+                  <th className="px-6 py-3.5 text-left font-semibold">Danh mục</th>
+                  <th className="px-6 py-3.5 text-right font-semibold">Cấu hình</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {products.map(p => (
+                  <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-slate-900">{p.name}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/40">
+                        {p.categories?.name || '—'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Button size="sm" variant="outline" leftIcon={<Settings className="w-4 h-4" />} onClick={() => setActiveProductForVariants(p)}>
+                        Cấu hình gói (Variants)
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+                {products.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="px-6 py-12 text-center text-slate-400 font-medium">
+                      Không có sản phẩm nào
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       {showCatModal && (

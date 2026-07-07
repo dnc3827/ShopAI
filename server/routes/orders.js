@@ -29,6 +29,52 @@ router.post('/create', requireAuth, async (req, res) => {
       return;
     }
 
+    // =========================================================================
+    // 🔥 BẮT ĐẦU: VÁ LỖ HỔNG RACE CONDITION & KIỂM TRA TỒN KHO TẠM THỜI
+    // =========================================================================
+    
+    // Lớp 1: Kiểm tra số lượng tài khoản thực tế đang sẵn sàng bán
+    const { count: availableStock, error: stockError } = await supabaseAdmin
+      .from('inventory')
+      .select('id', { count: 'exact', head: true })
+      .eq('variant_id', variantId)
+      .eq('status', 'AVAILABLE');
+
+    if (stockError) {
+      console.error('[createOrder] Stock check error:', stockError);
+      res.status(500).json({ success: false, error: 'Không thể kiểm tra tồn kho hệ thống' });
+      return;
+    }
+
+    if (availableStock === null || availableStock === 0) {
+      res.status(400).json({ success: false, error: 'Sản phẩm này hiện tại đã hết hàng trong kho.' });
+      return;
+    }
+
+    // Lớp 2: Kiểm tra các đơn hàng đang PENDING (chờ quét mã QR) trong 15 phút qua để tránh nuốt tiền
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const { count: pendingOrders, error: pendingError } = await supabaseAdmin
+      .from('order_items')
+      .select('id, orders!inner(status, created_at)', { count: 'exact', head: true })
+      .eq('variant_id', variantId)
+      .eq('orders.status', 'PENDING')
+      .gt('orders.created_at', fifteenMinutesAgo);
+
+    // Nếu không có lỗi truy vấn và có đơn hàng đang chờ, tiến hành so sánh giữ chỗ
+    if (!pendingError && pendingOrders !== null) {
+      if (availableStock <= pendingOrders) {
+        res.status(400).json({ 
+          success: false, 
+          error: 'Sản phẩm đang có người khác tiến hành thanh toán. Vui lòng thử lại sau ít phút!' 
+        });
+        return;
+      }
+    }
+
+    // =========================================================================
+    // 💡 KẾT THÚC VÁ LỖI - TIẾP TỤC LUỒNG XỬ LÝ CŨ
+    // =========================================================================
+
     // 2. Validate family email if required
     const variantType = variant.type;
     if (variantType === 'family') {

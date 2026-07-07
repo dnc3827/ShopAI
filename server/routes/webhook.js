@@ -30,7 +30,7 @@ router.post('/payos', async (req, res) => {
       return;
     }
 
-    // 2. Check payment status: ⚠️ EXACT condition from TDD
+    // 2. Check payment status: EXACT condition from TDD
     const isPaid = body.code === '00' && body.success === true;
     if (!isPaid) {
       console.log('[Webhook] Payment not confirmed, code:', body.code);
@@ -60,21 +60,38 @@ router.post('/payos', async (req, res) => {
       return;
     }
 
-    // 4. Update order to PAID first
-    await supabaseAdmin
-      .from('orders')
-      .update({ status: 'PAID', updated_at: new Date().toISOString() })
-      .eq('id', order.id);
-
-    // 5. Get order details for notification
+    // Lấy thông tin giá tiền của đơn hàng
     const orderItems = order.order_items;
     const firstItem = orderItems?.[0];
+    const amountRequired = firstItem?.price || 0;
     const variantType = firstItem?.product_variants?.type;
     const productName = firstItem?.products?.name || 'Sản phẩm';
     const variantName = firstItem?.product_variants?.variant_name || '';
-    const amount = firstItem?.price || 0;
 
-    // Fetch user email
+    // =========================================================================
+    // 🔥 LỚP BẢO VỆ MỚI: KIỂM TRA SỐ TIỀN THỰC NHẬN (CHỐNG CHUYỂN THIẾU)
+    // =========================================================================
+    const amountReceived = data.amount;
+
+    if (amountReceived < amountRequired) {
+      console.error(`[Webhook] PARTIAL PAYMENT! Order: ${orderCodeStr}. Expected: ${amountRequired}, Received: ${amountReceived}`);
+
+      // Đánh dấu đơn là PARTIAL_PAYMENT để không giao hàng
+      await supabaseAdmin
+        .from('orders')
+        .update({ status: 'PARTIAL_PAYMENT', updated_at: new Date().toISOString() })
+        .eq('id', order.id);
+
+      // Bắn thông báo khẩn cấp cho Admin vào xử lý
+      sendTelegramMessage(`🚨 **CẢNH BÁO GIAN LẬN / CHUYỂN THIẾU TIỀN** 🚨\n- Đơn hàng: ${orderCodeStr}\n- Khách phải trả: ${amountRequired} VNĐ\n- Khách thực chuyển: ${amountReceived} VNĐ\n- Trạng thái: ĐÃ KHÓA ĐƠN. Admin vui lòng liên hệ khách để thu thêm hoặc hoàn tiền.`)
+        .catch(err => console.error('[Telegram Error] Không gửi được thông báo:', err.message));
+
+      res.status(200).json({ success: false, error: 'Partial payment detected' });
+      return;
+    }
+    // =========================================================================
+
+    // Fetch user email for notification
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('email')
@@ -83,13 +100,19 @@ router.post('/payos', async (req, res) => {
 
     const userEmail = profile?.email || 'Unknown';
 
-    // 6. Family type: notify Telegram, do NOT auto-fulfill
+    // 4. Update order to PAID first
+    await supabaseAdmin
+      .from('orders')
+      .update({ status: 'PAID', updated_at: new Date().toISOString() })
+      .eq('id', order.id);
+
+    // 5. Family type: notify Telegram, do NOT auto-fulfill
     if (variantType === 'family') {
       const message = buildOrderNotification({
         orderCode: orderCodeStr,
         productName,
         variantName,
-        amount,
+        amount: amountReceived, // Update to show actual paid amount
         userEmail,
         familyEmail: order.family_email_capture || undefined,
         status: 'PAID',
@@ -99,7 +122,7 @@ router.post('/payos', async (req, res) => {
       return;
     }
 
-    // 7. Account type: run ACID transaction via Supabase RPC
+    // 6. Account type: run ACID transaction via Supabase RPC
     const { data: txResult, error: txError } = await supabaseAdmin
       .rpc('fulfill_order_transaction', { p_order_id: order.id });
 
@@ -119,7 +142,7 @@ router.post('/payos', async (req, res) => {
           orderCode: orderCodeStr,
           productName,
           variantName,
-          amount,
+          amount: amountReceived,
           userEmail,
           status: 'OUT_OF_STOCK',
         });
@@ -132,12 +155,12 @@ router.post('/payos', async (req, res) => {
       return;
     }
 
-    // 8. Fulfilled successfully — notify Telegram
+    // 7. Fulfilled successfully — notify Telegram
     const message = buildOrderNotification({
       orderCode: orderCodeStr,
       productName,
       variantName,
-      amount,
+      amount: amountReceived,
       userEmail,
       status: 'FULFILLED',
     });

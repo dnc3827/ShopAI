@@ -8,7 +8,7 @@ export const MainLayout: React.FC = () => {
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-surface">
       {!isAdminRoute && <Header />}
       <main className="flex-grow flex flex-col">
         <Outlet />

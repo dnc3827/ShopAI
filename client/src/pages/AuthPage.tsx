@@ -17,12 +17,10 @@ export const AuthPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccessMsg('');
     setIsLoading(true);
 
     try {
@@ -38,7 +36,7 @@ export const AuthPage: React.FC = () => {
           options: { data: { full_name: fullName } },
         });
         if (error) throw error;
-        setSuccessMsg('Đăng ký thành công! Kiểm tra email để xác nhận tài khoản.');
+        setMode('login');
       }
     } catch (err) {
       const e = err as Error;
@@ -55,12 +53,12 @@ export const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-16 bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center px-4 py-16 bg-surface">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 justify-center">
-            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <div className="w-12 h-12 bg-primary rounded-custom flex items-center justify-center shadow-card">
               <ShoppingBag className="text-white w-6 h-6" />
             </div>
             <span className="font-bold text-2xl text-slate-900">Shop<span className="text-primary">AI</span></span>
@@ -70,22 +68,22 @@ export const AuthPage: React.FC = () => {
           </h1>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 p-8">
+        <div className="bg-white rounded-custom shadow-card border border-slate-100 p-6 md:p-8">
           {/* Mode Tabs */}
-          <div className="flex rounded-xl border border-slate-200 p-1 mb-8 bg-slate-50">
+          <div className="flex rounded-pill border border-slate-200 p-1 mb-8 bg-surface">
             <button
-              onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
-                mode === 'login' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'
+              onClick={() => { setMode('login'); setError(''); }}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-pill transition-all ${
+                mode === 'login' ? 'bg-white shadow-card text-primary' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               <LogIn className="w-4 h-4 inline mr-1.5" />
               Đăng nhập
             </button>
             <button
-              onClick={() => { setMode('register'); setError(''); setSuccessMsg(''); }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
-                mode === 'register' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'
+              onClick={() => { setMode('register'); setError(''); }}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-pill transition-all ${
+                mode === 'register' ? 'bg-white shadow-card text-primary' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               <UserPlus className="w-4 h-4 inline mr-1.5" />
@@ -103,7 +101,7 @@ export const AuthPage: React.FC = () => {
                   onChange={e => setFullName(e.target.value)}
                   placeholder="Nguyễn Văn A"
                   required
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-slate-50/50"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-custom text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-surface"
                 />
               </div>
             )}
@@ -116,7 +114,7 @@ export const AuthPage: React.FC = () => {
                 onChange={e => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 required
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-slate-50/50"
+                className="w-full px-4 py-3 border border-slate-200 rounded-custom text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-surface"
               />
             </div>
 
@@ -129,19 +127,13 @@ export const AuthPage: React.FC = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-slate-50/50"
+                className="w-full px-4 py-3 border border-slate-200 rounded-custom text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors bg-surface"
               />
             </div>
 
             {error && (
-              <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm font-medium">
+              <div className="p-4 bg-red-50 border border-red-100 rounded-custom text-red-700 text-sm font-medium">
                 {error}
-              </div>
-            )}
-
-            {successMsg && (
-              <div className="p-4 bg-green-50 border border-green-100 rounded-xl text-green-700 text-sm font-medium">
-                {successMsg}
               </div>
             )}
 

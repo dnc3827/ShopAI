@@ -65,24 +65,24 @@ export const CheckoutSuccessPage: React.FC = () => {
   const progress = Math.min((attempt / POLL_MAX_ATTEMPTS) * 100, 100);
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-16 bg-slate-50">
-      <div className="max-w-lg w-full bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 p-10 text-center">
+    <div className="min-h-screen flex items-center justify-center px-4 py-16 bg-surface">
+      <div className="max-w-lg w-full bg-white rounded-custom shadow-card border border-slate-100 p-8 text-center">
         {/* Status Icon */}
         <div className="mb-6">
           {status === 'FULFILLED' ? (
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+            <div className="w-20 h-20 bg-green-100 rounded-pill flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-12 h-12 text-green-600" />
             </div>
           ) : status === 'CANCELLED' || status === 'EXPIRED' ? (
-            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+            <div className="w-20 h-20 bg-red-100 rounded-pill flex items-center justify-center mx-auto">
               <XCircle className="w-12 h-12 text-red-500" />
             </div>
           ) : status === 'PAID' ? (
-            <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto">
+            <div className="w-20 h-20 bg-amber-100 rounded-pill flex items-center justify-center mx-auto">
               <Clock className="w-12 h-12 text-amber-500" />
             </div>
           ) : (
-            <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto">
+            <div className="w-20 h-20 bg-blue-50 rounded-pill flex items-center justify-center mx-auto">
               <Loader2 className="w-12 h-12 text-primary animate-spin" />
             </div>
           )}
@@ -127,7 +127,7 @@ export const CheckoutSuccessPage: React.FC = () => {
 
         {/* Order code */}
         {orderCode && (
-          <div className="mb-6 py-2.5 px-5 bg-slate-50 rounded-xl inline-block border border-slate-100">
+          <div className="mb-6 py-2.5 px-5 bg-surface rounded-custom inline-block border border-slate-100">
             <span className="text-sm text-slate-500">Mã đơn: </span>
             <span className="font-mono font-bold text-slate-900">{orderCode}</span>
           </div>
@@ -135,9 +135,9 @@ export const CheckoutSuccessPage: React.FC = () => {
 
         {/* Progress bar (while polling) */}
         {(status === 'POLLING' || status === 'PENDING') && (
-          <div className="mb-6 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+          <div className="mb-6 w-full bg-slate-100 rounded-pill h-1.5 overflow-hidden">
             <div
-              className="bg-primary h-1.5 rounded-full transition-all duration-300"
+              className="bg-primary h-1.5 rounded-pill transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -166,19 +166,19 @@ export const CheckoutCancelPage: React.FC = () => {
   const orderCode = searchParams.get('orderCode');
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-16 bg-slate-50">
-      <div className="max-w-lg w-full bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 p-10 text-center">
-        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+    <div className="min-h-screen flex items-center justify-center px-4 py-16 bg-surface">
+      <div className="max-w-lg w-full bg-white rounded-custom shadow-card border border-slate-100 p-8 text-center">
+        <div className="w-20 h-20 bg-slate-100 rounded-pill flex items-center justify-center mx-auto mb-6">
           <XCircle className="w-12 h-12 text-slate-400" />
         </div>
         <h2 className="text-2xl font-bold text-slate-900 mb-3">Thanh toán bị huỷ</h2>
         {orderCode && (
-          <div className="mb-4 py-2.5 px-5 bg-slate-50 rounded-xl inline-block border border-slate-100">
+          <div className="mb-4 py-2.5 px-5 bg-surface rounded-custom inline-block border border-slate-100">
             <span className="text-sm text-slate-500">Mã đơn: </span>
             <span className="font-mono font-bold text-slate-900">{orderCode}</span>
           </div>
         )}
-        <p className="mb-8 text-slate-600 leading-relaxed">
+        <p className="mb-8 text-slate-600 leading-normal">
           Giao dịch đã bị huỷ. Đơn hàng chưa được thanh toán và không ảnh hưởng đến tài khoản của bạn.
         </p>
         <Link to="/">

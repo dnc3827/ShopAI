@@ -32,10 +32,10 @@ export const FAQPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen py-16">
+    <div className="bg-surface min-h-screen py-16">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-primary mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-pill bg-orange-100 text-primary mb-6">
             <HelpCircle className="w-8 h-8" />
           </div>
           <h1 className="text-4xl font-extrabold text-slate-900 mb-4">Câu Hỏi Thường Gặp</h1>
@@ -46,8 +46,8 @@ export const FAQPage: React.FC = () => {
           {faqs.map((faq, index) => (
             <div 
               key={index} 
-              className={`bg-white rounded-2xl border transition-all duration-200 ${
-                openIndex === index ? 'border-primary ring-1 ring-primary/20 shadow-md' : 'border-slate-200 shadow-sm hover:border-slate-300'
+              className={`bg-white rounded-custom border transition-all duration-200 ${
+                openIndex === index ? 'border-primary ring-1 ring-primary/20 shadow-card' : 'border-slate-200 shadow-card hover:border-primary'
               }`}
             >
               <button
@@ -67,7 +67,7 @@ export const FAQPage: React.FC = () => {
                   openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                 }`}
               >
-                <div className="px-6 pb-6 pt-2 text-slate-600 leading-relaxed border-t border-slate-50">
+                <div className="px-6 pb-6 pt-2 text-slate-600 leading-normal border-t border-slate-50">
                   {faq.answer}
                 </div>
               </div>

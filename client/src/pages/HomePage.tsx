@@ -76,7 +76,7 @@ export const HomePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-slate-50 min-h-screen flex items-center justify-center py-24">
+      <div className="bg-surface min-h-screen flex items-center justify-center py-24">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-slate-500 font-medium">Đang tải danh sách sản phẩm...</p>
@@ -86,27 +86,27 @@ export const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="bg-slate-50 min-h-screen pb-20 relative">
+    <div className="bg-surface min-h-screen pb-20 relative">
       {/* Background Pattern */}
       <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#e2e8f0 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-12">
         
         {/* Hero Section - Split Layout */}
-        <div className="bg-gradient-to-br from-primary to-blue-700 rounded-3xl p-8 md:p-12 text-white mb-8 shadow-2xl shadow-blue-500/20 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10">
+        <div className="bg-gradient-to-br from-primary to-primary-dark rounded-pill p-6 md:p-10 text-white mb-6 shadow-card relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
           {/* Decorative glowing blobs */}
           <div className="absolute top-0 right-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none transform -translate-y-1/2"></div>
           <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none transform translate-y-1/2"></div>
           
           {/* Left Column: Text & Search */}
           <div className="flex-1 w-full md:max-w-xl z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-sm font-medium text-blue-50 mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-pill bg-white/10 backdrop-blur-md border border-white/20 text-sm font-medium text-white/90 mb-4">
               <Sparkles className="w-4 h-4 text-amber-300" />
               <span>Tài khoản AI chất lượng cao</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 leading-tight">
               Khám phá thế giới <br className="hidden md:block"/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">Tài khoản AI</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-white">Tài khoản AI</span>
             </h1>
             <p className="text-blue-100 text-lg md:text-xl font-medium mb-8 max-w-lg">
               Giao hàng tự động tức thì 24/7. Trải nghiệm các công cụ phần mềm hàng đầu với chi phí tối ưu nhất.
@@ -122,7 +122,7 @@ export const HomePage: React.FC = () => {
                 placeholder="Tìm kiếm sản phẩm (vd: ChatGPT, Quizlet...)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-11 pr-4 py-3.5 bg-white/95 backdrop-blur text-slate-900 rounded-xl focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 border-none shadow-lg placeholder-slate-400 font-medium transition-all"
+                className="block w-full pl-11 pr-4 py-3.5 bg-white/95 backdrop-blur text-slate-900 rounded-custom focus:ring-4 focus:ring-primary/30 focus:border-primary border-none shadow-lg placeholder-slate-400 font-medium transition-all"
               />
             </div>
           </div>
@@ -181,17 +181,17 @@ export const HomePage: React.FC = () => {
                             {/* Badges overlaid on image */}
                             <div className="absolute left-2.5 top-2.5 flex flex-col gap-1.5 z-10">
                               {featuredIsComingSoon && (
-                                <span className="inline-flex items-center rounded-md bg-amber-400/80 px-2 py-0.5 text-xs font-semibold text-slate-900 border border-amber-300 backdrop-blur shadow-sm">
+                                <span className="inline-flex items-center rounded-custom bg-amber-400/80 px-2 py-0.5 text-xs font-semibold text-slate-900 border border-amber-300 backdrop-blur shadow-sm">
                                   Sắp ra mắt
                                 </span>
                               )}
                               {!featuredIsComingSoon && featuredIsOutOfStock && (
-                                <span className="inline-flex items-center rounded-md bg-red-500/80 px-2 py-0.5 text-xs font-semibold text-white border border-red-400 backdrop-blur shadow-sm">
+                                <span className="inline-flex items-center rounded-custom bg-red-500/80 px-2 py-0.5 text-xs font-semibold text-white border border-red-400 backdrop-blur shadow-sm">
                                   Hết hàng
                                 </span>
                               )}
                               {!featuredIsComingSoon && featuredIsLowStock && (
-                                <span className="inline-flex items-center rounded-md bg-amber-500/80 px-2 py-0.5 text-xs font-semibold text-white border border-amber-400 backdrop-blur shadow-sm">
+                                <span className="inline-flex items-center rounded-custom bg-amber-500/80 px-2 py-0.5 text-xs font-semibold text-white border border-amber-400 backdrop-blur shadow-sm">
                                   Sắp hết
                                 </span>
                               )}
@@ -203,19 +203,19 @@ export const HomePage: React.FC = () => {
                         <div className="flex flex-col flex-1 p-4 pt-1 gap-2 bg-transparent">
                           {/* Category Badge */}
                           <div>
-                            <span className="inline-flex items-center rounded-md bg-white/10 px-2 py-0.5 text-xs font-medium text-slate-200 border border-white/10 backdrop-blur-sm">
+                            <span className="inline-flex items-center rounded-custom bg-white/10 px-2 py-0.5 text-xs font-medium text-slate-200 border border-white/10 backdrop-blur-sm">
                               {featuredProduct.categories?.name || 'Danh mục khác'}
                             </span>
                           </div>
 
                           {/* Product Name */}
-                          <h3 className="text-lg font-bold text-white transition-colors group-hover:text-amber-300 line-clamp-2 min-h-[56px] leading-snug">
+                          <h3 className="text-lg font-bold text-white transition-colors group-hover:text-amber-300 line-clamp-2 min-h-[56px] leading-normal">
                             {featuredProduct.name}
                           </h3>
 
                           {/* Description */}
                           {featuredProduct.description && (
-                            <p className="text-sm text-blue-100/70 line-clamp-2 mb-2 leading-relaxed font-normal">
+                            <p className="text-sm text-orange-100/70 line-clamp-2 mb-2 leading-normal font-normal">
                               {stripHtml(featuredProduct.description)}
                             </p>
                           )}
@@ -240,9 +240,9 @@ export const HomePage: React.FC = () => {
         </div>
 
         {/* Trust Indicators */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white rounded-custom p-4 border border-slate-100 shadow-card flex items-center gap-4 hover:shadow-card transition-shadow">
+            <div className="w-12 h-12 rounded-custom bg-orange-50 flex items-center justify-center flex-shrink-0">
               <Layers className="w-6 h-6 text-primary" />
             </div>
             <div>
@@ -250,18 +250,18 @@ export const HomePage: React.FC = () => {
               <p className="text-sm font-medium text-slate-500">Sản phẩm chất lượng</p>
             </div>
           </div>
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
-              <ShieldCheck className="w-6 h-6 text-purple-600" />
+          <div className="bg-white rounded-custom p-4 border border-slate-100 shadow-card flex items-center gap-4 hover:shadow-card transition-shadow">
+            <div className="w-12 h-12 rounded-custom bg-orange-50 flex items-center justify-center flex-shrink-0">
+              <ShieldCheck className="w-6 h-6 text-primary" />
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-800">{categories.length}</p>
               <p className="text-sm font-medium text-slate-500">Danh mục chuyên biệt</p>
             </div>
           </div>
-          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-              <Zap className="w-6 h-6 text-amber-600" />
+          <div className="bg-white rounded-custom p-4 border border-slate-100 shadow-card flex items-center gap-4 hover:shadow-card transition-shadow">
+            <div className="w-12 h-12 rounded-custom bg-orange-50 flex items-center justify-center flex-shrink-0">
+              <Zap className="w-6 h-6 text-primary" />
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-800">24/7</p>
@@ -274,9 +274,9 @@ export const HomePage: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2.5 mb-10 sticky top-20 z-30 bg-slate-50/90 backdrop-blur-md py-4 -mx-4 px-4 sm:mx-0 sm:px-0">
           <button
             onClick={() => setActiveCategory('all')}
-            className={`px-6 py-2.5 text-sm rounded-full font-semibold border transition-all duration-200 cursor-pointer ${activeCategory === 'all'
-                ? 'bg-primary text-white border-primary shadow-md shadow-blue-500/20'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border-slate-200 hover:border-slate-300 shadow-sm'
+            className={`px-5 py-2 text-sm rounded-pill font-semibold border transition-all duration-200 cursor-pointer ${activeCategory === 'all'
+                ? 'bg-primary text-white border-primary shadow-card'
+                : 'bg-white text-slate-600 hover:bg-orange-50 hover:text-primary border-slate-200 hover:border-primary shadow-card'
               }`}
           >
             Tất cả
@@ -285,9 +285,9 @@ export const HomePage: React.FC = () => {
             <button
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
-              className={`px-6 py-2.5 text-sm rounded-full font-semibold border transition-all duration-200 cursor-pointer ${activeCategory === category.id
-                  ? 'bg-primary text-white border-primary shadow-md shadow-blue-500/20'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border-slate-200 hover:border-slate-300 shadow-sm'
+              className={`px-5 py-2 text-sm rounded-pill font-semibold border transition-all duration-200 cursor-pointer ${activeCategory === category.id
+                  ? 'bg-primary text-white border-primary shadow-card'
+                  : 'bg-white text-slate-600 hover:bg-orange-50 hover:text-primary border-slate-200 hover:border-primary shadow-card'
                 }`}
             >
               {category.name}
@@ -297,8 +297,8 @@ export const HomePage: React.FC = () => {
 
         {/* Products Display */}
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="text-center py-12 bg-white rounded-pill border border-slate-100 shadow-card">
+            <div className="w-16 h-16 bg-surface rounded-pill flex items-center justify-center mx-auto mb-4">
               <Search className="w-8 h-8 text-slate-300" />
             </div>
             <h3 className="text-lg font-bold text-slate-800 mb-1">Không tìm thấy sản phẩm</h3>
@@ -307,17 +307,17 @@ export const HomePage: React.FC = () => {
         ) : (
           /* Render theo section nếu ở trang "Tất cả" và không có search, ngược lại render lưới phẳng */
           (activeCategory === 'all' && searchQuery === '') ? (
-            <div className="space-y-16 animate-in fade-in duration-500">
+            <div className="space-y-10 animate-in fade-in duration-500">
               {categories.map(cat => {
                 const catProducts = products.filter(p => p.category_id === cat.id);
                 if (catProducts.length === 0) return null;
                 
                 return (
                   <section key={cat.id}>
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center justify-between mb-4">
                       <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                         {cat.name}
-                        <span className="text-sm font-semibold bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">
+                        <span className="text-sm font-semibold bg-orange-100 text-primary px-2 py-0.5 rounded-pill">
                           {catProducts.length}
                         </span>
                       </h2>
@@ -331,7 +331,7 @@ export const HomePage: React.FC = () => {
                         Xem tất cả &rarr;
                       </button>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {catProducts.map(product => (
                         <ProductCard key={product.id} product={product} />
                       ))}
@@ -341,7 +341,7 @@ export const HomePage: React.FC = () => {
               })}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-in fade-in duration-500">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 animate-in fade-in duration-500">
               {filteredProducts.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}

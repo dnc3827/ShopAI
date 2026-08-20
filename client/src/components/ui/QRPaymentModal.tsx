@@ -118,16 +118,16 @@ export const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
   return (
     // Backdrop
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-white rounded-pill shadow-modal w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-slate-100">
           <h2 className="text-lg font-bold text-slate-900">Thanh toán QR</h2>
           {status === 'polling' && (
             <button
               onClick={handleCancel}
               disabled={isCancelling}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              className="w-8 h-8 rounded-pill flex items-center justify-center text-slate-400 hover:text-primary hover:bg-orange-50 transition-colors"
               aria-label="Đóng"
             >
               <X className="w-5 h-5" />
@@ -136,7 +136,7 @@ export const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 flex flex-col items-center gap-4">
+        <div className="px-4 py-4 flex flex-col items-center gap-3">
 
           {/* Status: fulfilled */}
           {status === 'fulfilled' && (
@@ -161,7 +161,7 @@ export const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
               <p className="text-sm text-slate-500 text-center">Vui lòng thử lại từ đầu.</p>
               <button
                 onClick={onClose}
-                className="mt-2 px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors"
+                className="mt-2 px-4 py-2 bg-surface hover:bg-slate-200 text-slate-700 font-semibold rounded-custom transition-colors"
               >
                 Đóng
               </button>
@@ -175,7 +175,7 @@ export const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
               <p className="text-sm text-slate-500 text-center font-medium">{productName}</p>
 
               {/* QR Code */}
-              <div className="p-4 bg-white rounded-2xl border-2 border-slate-100 shadow-inner">
+              <div className="p-3 bg-white rounded-custom border-2 border-slate-100 shadow-inner">
                 <QRCode
                   value={qrCode}
                   size={200}
@@ -203,7 +203,7 @@ export const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
               </div>
 
               {/* Order code */}
-              <div className="w-full bg-slate-50 rounded-xl px-4 py-2.5 flex justify-between items-center border border-slate-100">
+              <div className="w-full bg-surface rounded-custom px-3 py-2 flex justify-between items-center border border-slate-100">
                 <span className="text-xs text-slate-500">Mã đơn hàng</span>
                 <span className="font-mono text-sm font-bold text-slate-800">{orderCode}</span>
               </div>
@@ -212,7 +212,7 @@ export const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
               <button
                 onClick={handleCancel}
                 disabled={isCancelling}
-                className="w-full py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors disabled:opacity-60"
+                className="w-full py-3 rounded-custom border-2 border-slate-200 text-slate-600 font-semibold hover:bg-orange-50 hover:text-primary transition-colors disabled:opacity-60"
               >
                 {isCancelling ? (
                   <span className="flex items-center justify-center gap-2">
@@ -222,7 +222,7 @@ export const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
               </button>
 
               {/* Hint */}
-              <p className="text-xs text-slate-400 text-center leading-relaxed">
+              <p className="text-xs text-slate-400 text-center leading-normal">
                 Dùng app ngân hàng quét mã QR ở trên để thanh toán.
                 Đơn hàng sẽ được giao tự động ngay sau khi xác nhận.
               </p>

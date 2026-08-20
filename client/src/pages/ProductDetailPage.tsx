@@ -137,7 +137,7 @@ export const ProductDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen py-8">
+    <div className="bg-surface min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumbs */}
         <nav className="flex items-center text-sm text-slate-500 mb-6">
@@ -156,7 +156,7 @@ export const ProductDetailPage: React.FC = () => {
           {/* Left Column */}
           <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
             {/* Image Box */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden aspect-[16/9] w-full">
+            <div className="bg-white rounded-custom border border-slate-100 shadow-card overflow-hidden aspect-[16/9] w-full">
               {product.thumbnail_url ? (
                 <img 
                   src={product.thumbnail_url} 
@@ -167,28 +167,28 @@ export const ProductDetailPage: React.FC = () => {
                   }}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-100">
                   <span className="text-6xl">🤖</span>
                 </div>
               )}
             </div>
 
             {/* Description Box */}
-            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
+            <div className="bg-white p-4 md:p-6 rounded-custom shadow-card border border-slate-100">
               {category && (
                 <div className="text-primary font-bold tracking-wider uppercase mb-3 text-sm">
                   {category.name}
                 </div>
               )}
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-6 leading-snug">{product.name}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 leading-normal">{product.name}</h1>
               
               {product.description ? (
                 <div
-                  className="prose prose-slate max-w-none text-slate-600 leading-relaxed"
+                  className="prose prose-slate max-w-none text-slate-600 leading-normal"
                   dangerouslySetInnerHTML={{ __html: product.description }}
                 />
               ) : (
-                <p className="text-lg text-slate-600 leading-relaxed">Chưa có mô tả.</p>
+                <p className="text-lg text-slate-600 leading-normal">Chưa có mô tả.</p>
               )}
 
               <h3 className="text-xl font-bold text-slate-900 mt-10 mb-5">Thông tin chi tiết</h3>
@@ -206,7 +206,7 @@ export const ProductDetailPage: React.FC = () => {
             </div>
 
             {/* FAQ Box */}
-            <div id="faq" className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100 mb-8 lg:mb-0">
+            <div id="faq" className="bg-white p-4 md:p-6 rounded-custom shadow-card border border-slate-100 mb-8 lg:mb-0">
               <h3 className="text-xl font-bold text-slate-900 mb-6">Câu hỏi thường gặp</h3>
               <div className="space-y-4">
                 {[
@@ -214,9 +214,9 @@ export const ProductDetailPage: React.FC = () => {
                   { q: 'Có được đổi trả không?', a: 'Chúng tôi áp dụng chính sách bảo hành 1 đổi 1 nếu tài khoản lỗi trong thời gian sử dụng đúng quy định.' },
                   { q: 'Gói Family khác gì gói Thường?', a: 'Gói Family yêu cầu email để mời vào nhóm gia đình (xử lý thủ công bởi admin). Gói thường là tài khoản nạp sẵn (email/pass), giao tự động ngay lập tức.' },
                 ].map((faq, i) => (
-                  <div key={i} className="bg-slate-50 p-5 rounded-xl border border-slate-100">
+                  <div key={i} className="bg-surface p-4 rounded-custom border border-slate-100">
                     <h4 className="font-semibold text-slate-900 mb-2">{faq.q}</h4>
-                    <p className="text-slate-600 text-sm leading-relaxed">{faq.a}</p>
+                    <p className="text-slate-600 text-sm leading-normal">{faq.a}</p>
                   </div>
                 ))}
               </div>
@@ -226,7 +226,7 @@ export const ProductDetailPage: React.FC = () => {
           {/* Right Column - Sticky */}
           <div className="lg:col-span-5 xl:col-span-4">
             <div className="sticky top-24">
-              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-md border border-slate-100">
+              <div className="bg-white p-4 md:p-6 rounded-custom shadow-card border border-slate-100">
                 <h3 className="text-xl font-bold text-slate-900 mb-6 border-b border-slate-100 pb-4">Chọn gói sản phẩm</h3>
 
                 {/* Variant Selector */}
@@ -239,9 +239,9 @@ export const ProductDetailPage: React.FC = () => {
                         key={variant.id}
                         onClick={() => handleVariantSelect(variant)}
                         disabled={outOfStock}
-                        className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex flex-col gap-2 ${
+                        className={`w-full text-left p-4 rounded-custom border-2 transition-all duration-200 flex flex-col gap-2 ${
                           isSelected
-                            ? 'border-primary bg-blue-50/50'
+                            ? 'border-primary bg-orange-50/50'
                             : outOfStock
                             ? 'border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed'
                             : 'border-slate-200 hover:border-slate-300 bg-white'
@@ -284,7 +284,7 @@ export const ProductDetailPage: React.FC = () => {
                         if (familyEmailError) setFamilyEmailError('');
                       }}
                       placeholder="yourname@gmail.com"
-                      className={`w-full px-4 py-3 border rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors ${
+                      className={`w-full px-4 py-3 border rounded-custom text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors ${
                         familyEmailError ? 'border-red-400 bg-red-50' : 'border-slate-300 bg-white'
                       }`}
                     />
@@ -300,7 +300,7 @@ export const ProductDetailPage: React.FC = () => {
                 )}
 
                 {/* Price Summary */}
-                <div className="bg-slate-50 p-4 rounded-xl mb-6 flex justify-between items-center border border-slate-100">
+                <div className="bg-surface p-4 rounded-custom mb-4 flex justify-between items-center border border-slate-100">
                   <span className="text-slate-600 font-medium">Tổng thanh toán:</span>
                   <span className="text-2xl font-bold text-primary">
                     {selectedVariant
@@ -311,7 +311,7 @@ export const ProductDetailPage: React.FC = () => {
 
                 {/* Error message */}
                 {checkoutError && (
-                  <div className="mb-6 flex items-start gap-2 text-sm text-red-700 bg-red-50 p-3 rounded-xl border border-red-100">
+                  <div className="mb-6 flex items-start gap-2 text-sm text-red-700 bg-red-50 p-3 rounded-custom border border-red-100">
                     <AlertCircle className="w-5 h-5 flex-shrink-0" />
                     <p className="font-medium">{checkoutError}</p>
                   </div>
@@ -319,7 +319,7 @@ export const ProductDetailPage: React.FC = () => {
 
                 {/* Success message */}
                 {successMsg && (
-                  <div className="mb-4 flex items-start gap-2 text-sm text-green-700 bg-green-50 p-4 rounded-xl border border-green-100">
+                  <div className="mb-4 flex items-start gap-2 text-sm text-green-700 bg-green-50 p-4 rounded-custom border border-green-100">
                     <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
                     <p className="font-medium">{successMsg}</p>
                   </div>
@@ -327,10 +327,10 @@ export const ProductDetailPage: React.FC = () => {
 
                 {/* Checkout button */}
                 <button
-                  className={`w-full py-3 px-4 rounded-xl text-white font-semibold text-lg flex items-center justify-center gap-2 shadow-md transition-all ${
+                  className={`w-full py-3 px-4 rounded-custom text-white font-semibold text-lg flex items-center justify-center gap-2 shadow-md transition-all ${
                     isOutOfStock || !selectedVariant || !!successMsg
                       ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
-                      : 'bg-blue-600 hover:bg-blue-700'
+                      : 'bg-primary hover:bg-primary-dark'
                   } ${isCheckingOut ? 'opacity-80 cursor-wait' : ''}`}
                   onClick={handleCheckout}
                   disabled={isOutOfStock || !selectedVariant || isCheckingOut || !!successMsg}
@@ -342,7 +342,7 @@ export const ProductDetailPage: React.FC = () => {
 
                 {/* Family warning */}
                 {isFamilyVariant && !successMsg && (
-                  <p className="mt-5 text-xs text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-100 flex items-start gap-2 leading-relaxed">
+                  <p className="mt-5 text-xs text-amber-700 bg-amber-50 p-3 rounded-custom border border-amber-100 flex items-start gap-2 leading-normal">
                     <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     Gói Family xử lý thủ công (1-2 giờ). Admin sẽ mời email của bạn sau khi thanh toán.
                   </p>

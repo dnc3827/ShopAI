@@ -28,7 +28,18 @@ router.get('/orders', async (req, res) => {
 
     if (error) throw error;
 
-    res.json({ success: true, data });
+    // Mask password for any purchased_item that has expired
+    // (status set to 'expired' by expiration.job.js)
+    const sanitized = (data || []).map(order => ({
+      ...order,
+      purchased_items: (order.purchased_items || []).map(item => ({
+        ...item,
+        pass: item.status === 'expired' ? '***' : item.pass,
+      })),
+    }));
+
+    res.json({ success: true, data: sanitized });
+
   } catch (err) {
     console.error('[getUserOrders] Error:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch orders' });

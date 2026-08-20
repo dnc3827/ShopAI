@@ -4,16 +4,27 @@
 
 @layer base {
   body {
-    @apply bg-surface text-slate-900 font-['Inter',_sans-serif];
+    @apply bg-surface text-slate-900;
+    font-family: sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: normal;
   }
 }
 
+/* Focus-visible global rule (WCAG 2.2 AA) */
+:focus-visible {
+  outline: 2px solid #ff9752;
+  outline-offset: 2px;
+}
+
 .card {
-  @apply bg-white rounded-custom shadow-sm border border-slate-100;
+  @apply bg-white rounded-custom shadow-card border border-slate-100;
 }
 
 .btn-primary {
-  @apply bg-primary text-white px-4 py-2 rounded-custom hover:bg-blue-600 transition-colors disabled:opacity-50;
+  @apply bg-primary text-white px-3 py-2 rounded-custom hover:bg-primary-dark transition-colors disabled:opacity-50
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
 }
 
 /* Premium Animations */
@@ -61,4 +72,3 @@
   pointer-events: none;
   animation: shine-sweep 6s infinite ease-in-out;
 }
-

@@ -23,7 +23,7 @@ export const Title: React.FC<TypographyProps> = ({ className = '', as: Component
 
 export const Body: React.FC<TypographyProps> = ({ className = '', as: Component = 'p', children, ...props }) => {
   return (
-    <Component className={`text-base font-normal text-slate-600 leading-relaxed ${className}`} {...props}>
+    <Component className={`text-base font-normal text-slate-600 leading-normal ${className}`} {...props}>
       {children}
     </Component>
   );

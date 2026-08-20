@@ -56,7 +56,7 @@ export const Header: React.FC = () => {
           {/* Mega Menu Dropdown - desktop only */}
           <div className="hidden md:block group h-full">
             <div className="h-full flex items-center">
-              <button className="flex items-center gap-2 bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-custom font-medium transition-colors">
+              <button className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-custom font-medium transition-colors">
                 <Menu className="w-5 h-5" />
                 <span>Danh mục</span>
                 <ChevronDown className="w-4 h-4 ml-1" />
@@ -95,7 +95,7 @@ export const Header: React.FC = () => {
                             <Link 
                               key={p.id} 
                               to={`/product/${p.id}`}
-                              className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-primary hover:text-primary hover:bg-blue-50 transition-all text-sm font-medium shadow-sm hover:shadow"
+                              className="px-4 py-2 rounded-custom border border-slate-200 bg-white text-slate-600 hover:border-primary hover:text-primary hover:bg-orange-50 transition-all text-sm font-medium shadow-sm hover:shadow"
                             >
                               {p.name}
                             </Link>
@@ -144,7 +144,7 @@ export const Header: React.FC = () => {
           ) : (
             <Link
               to="/auth"
-              className="flex items-center gap-2 text-sm font-medium text-white bg-primary hover:bg-blue-600 transition-colors px-3 py-2 rounded-custom"
+              className="flex items-center gap-2 text-sm font-medium text-white bg-primary hover:bg-primary-dark transition-colors px-3 py-2 rounded-custom"
             >
               <User className="w-4 h-4" />
               <span className="hidden sm:inline">Đăng nhập</span>
@@ -154,7 +154,7 @@ export const Header: React.FC = () => {
           {/* Hamburger button - mobile only */}
           <button
             onClick={() => setMobileMenuOpen(o => !o)}
-            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-custom text-slate-600 hover:bg-slate-100 transition-colors"
             aria-label="Menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -188,7 +188,7 @@ export const Header: React.FC = () => {
                         key={p.id}
                         to={`/product/${p.id}`}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 text-slate-600 hover:border-primary hover:text-primary hover:bg-blue-50 transition-all"
+                        className="px-3 py-1.5 text-sm rounded-custom border border-slate-200 text-slate-600 hover:border-primary hover:text-primary hover:bg-orange-50 transition-all"
                       >
                         {p.name}
                       </Link>
@@ -209,7 +209,7 @@ export const Header: React.FC = () => {
                 <Link
                   to="/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 hover:bg-slate-50 font-medium transition-colors"
+                  className="flex items-center gap-3 px-3 py-3 rounded-pill text-slate-700 hover:bg-slate-50 font-medium transition-colors"
                 >
                   <User className="w-5 h-5 text-primary" />
                   Đơn hàng của tôi
@@ -218,7 +218,7 @@ export const Header: React.FC = () => {
                   <Link
                     to="/admin"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl text-amber-700 hover:bg-amber-50 font-medium transition-colors"
+                    className="flex items-center gap-3 px-3 py-3 rounded-pill text-amber-700 hover:bg-amber-50 font-medium transition-colors"
                   >
                     <Settings className="w-5 h-5" />
                     Trang Admin
@@ -226,7 +226,7 @@ export const Header: React.FC = () => {
                 )}
                 <button
                   onClick={handleSignOut}
-                  className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-red-500 hover:bg-red-50 font-medium transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-pill text-red-500 hover:bg-red-50 font-medium transition-colors"
                 >
                   <LogOut className="w-5 h-5" />
                   Đăng xuất
@@ -236,7 +236,7 @@ export const Header: React.FC = () => {
               <Link
                 to="/auth"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-blue-600 transition-colors"
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-pill bg-primary text-white font-semibold hover:bg-primary-dark transition-colors"
               >
                 <User className="w-5 h-5" />
                 Đăng nhập / Đăng ký

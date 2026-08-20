@@ -54,7 +54,7 @@ const STATUS_CONFIG = {
 const StatusBadge: React.FC<{ status: Order['status'] }> = ({ status }) => {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.PENDING;
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${cfg.cls}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold ${cfg.cls}`}>
       {cfg.label}
     </span>
   );
@@ -102,8 +102,8 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
   const purchased = order.purchased_items?.[0];
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-      <div className="p-5">
+    <div className="bg-white rounded-custom border border-slate-100 shadow-card overflow-hidden">
+      <div className="p-4">
         <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
           <div>
             <p className="text-xs text-slate-500 mb-1">
@@ -126,7 +126,7 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
 
         {/* Delivered account info */}
         {order.status === 'FULFILLED' && purchased && (
-          <div className="mt-4 p-4 bg-green-50 rounded-xl border border-green-100 space-y-2">
+          <div className="mt-4 p-4 bg-green-50 rounded-custom border border-green-100 space-y-2">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-bold text-green-700 uppercase tracking-wider">
                 ✅ Thông tin tài khoản
@@ -167,7 +167,7 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
 
         {/* Family order waiting */}
         {order.status === 'PAID' && item?.product_variants?.type === 'family' && (
-          <div className="mt-4 p-4 bg-amber-50 rounded-xl border border-amber-100">
+          <div className="mt-4 p-4 bg-amber-50 rounded-custom border border-amber-100">
             <p className="text-sm text-amber-700 font-medium">
               ⏳ Đơn Family đang được xử lý. Admin sẽ mời email <strong>{order.family_email_capture}</strong> trong 1-2 giờ.
             </p>
@@ -223,7 +223,7 @@ export const DashboardPage: React.FC = () => {
   if (!user) return null;
 
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div className="bg-surface min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <h1 className="text-2xl font-bold text-slate-900">Tài khoản của tôi</h1>
@@ -253,7 +253,7 @@ export const DashboardPage: React.FC = () => {
                 <Icon className="w-4 h-4" />
                 {label}
                 {key === 'orders' && orders.length > 0 && (
-                  <span className="ml-1 bg-primary text-white text-xs px-1.5 py-0.5 rounded-full">
+                  <span className="ml-1 bg-primary text-white text-xs px-1.5 py-0.5 rounded-pill">
                     {orders.length}
                   </span>
                 )}
@@ -272,7 +272,7 @@ export const DashboardPage: React.FC = () => {
             {tab === 'orders' && (
               <div className="space-y-4">
                 {orders.length === 0 ? (
-                  <div className="text-center py-20 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                  <div className="text-center py-16 bg-white rounded-custom border border-slate-100 shadow-card">
                     <Package className="w-16 h-16 text-slate-200 mx-auto mb-4" />
                     <p className="text-slate-400 text-lg font-semibold">Chưa có đơn hàng nào</p>
                     <p className="mt-2 text-sm text-slate-500">
@@ -287,9 +287,9 @@ export const DashboardPage: React.FC = () => {
 
             {/* Profile Tab */}
             {tab === 'profile' && profile && (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+              <div className="bg-white rounded-custom border border-slate-100 shadow-card p-4 md:p-6 space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary">
+                  <div className="w-16 h-16 rounded-custom bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary">
                     {profile.full_name?.[0]?.toUpperCase() || profile.email[0].toUpperCase()}
                   </div>
                   <div>

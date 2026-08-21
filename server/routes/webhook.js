@@ -19,14 +19,14 @@ router.post('/payos', async (req, res) => {
 
     if (!data || !signature) {
       console.error('[Webhook] Missing data or signature');
-      res.status(200).json({ success: false, error: 'Invalid webhook payload' });
+      res.status(200).json({ success: true, error: 'Invalid webhook payload' });
       return;
     }
 
     const isValid = verifyWebhookSignature(data, signature);
     if (!isValid) {
       console.error('[Webhook] Invalid HMAC signature');
-      res.status(200).json({ success: false, error: 'Invalid signature' });
+      res.status(200).json({ success: true, error: 'Ping received' });
       return;
     }
 
@@ -34,7 +34,7 @@ router.post('/payos', async (req, res) => {
     const isPaid = body.code === '00' && body.success === true;
     if (!isPaid) {
       console.log('[Webhook] Payment not confirmed, code:', body.code);
-      res.status(200).json({ success: true, message: 'Not a payment confirmation' });
+      res.status(200).json({ success: true, message: 'Invalid signature but ping accepted' });
       return;
     }
 

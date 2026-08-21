@@ -29,52 +29,6 @@ router.post('/create', requireAuth, async (req, res) => {
       return;
     }
 
-    // =========================================================================
-    // 🔥 BẮT ĐẦU: VÁ LỖ HỔNG RACE CONDITION & KIỂM TRA TỒN KHO TẠM THỜI
-    // =========================================================================
-    
-    // Lớp 1: Kiểm tra số lượng tài khoản thực tế đang sẵn sàng bán
-    const { count: availableStock, error: stockError } = await supabaseAdmin
-      .from('inventory')
-      .select('id', { count: 'exact', head: true })
-      .eq('variant_id', variantId)
-      .eq('status', 'AVAILABLE');
-
-    if (stockError) {
-      console.error('[createOrder] Stock check error:', stockError);
-      res.status(500).json({ success: false, error: 'Không thể kiểm tra tồn kho hệ thống' });
-      return;
-    }
-
-    if (availableStock === null || availableStock === 0) {
-      res.status(400).json({ success: false, error: 'Sản phẩm này hiện tại đã hết hàng trong kho.' });
-      return;
-    }
-
-    // Lớp 2: Kiểm tra các đơn hàng đang PENDING (chờ quét mã QR) trong 15 phút qua để tránh nuốt tiền
-    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-    const { count: pendingOrders, error: pendingError } = await supabaseAdmin
-      .from('order_items')
-      .select('id, orders!inner(status, created_at)', { count: 'exact', head: true })
-      .eq('variant_id', variantId)
-      .eq('orders.status', 'PENDING')
-      .gt('orders.created_at', fifteenMinutesAgo);
-
-    // Nếu không có lỗi truy vấn và có đơn hàng đang chờ, tiến hành so sánh giữ chỗ
-    if (!pendingError && pendingOrders !== null) {
-      if (availableStock <= pendingOrders) {
-        res.status(400).json({ 
-          success: false, 
-          error: 'Sản phẩm đang có người khác tiến hành thanh toán. Vui lòng thử lại sau ít phút!' 
-        });
-        return;
-      }
-    }
-
-    // =========================================================================
-    // 💡 KẾT THÚC VÁ LỖI - TIẾP TỤC LUỒNG XỬ LÝ CŨ
-    // =========================================================================
-
     // 2. Validate family email if required
     const variantType = variant.type;
     if (variantType === 'family') {
@@ -87,35 +41,56 @@ router.post('/create', requireAuth, async (req, res) => {
     // 3. Generate a unique order code (timestamp-based, safe for PayOS Number)
     // Using last 9 digits of timestamp to stay within JS safe integer range
     const orderCode = parseInt(Date.now().toString().slice(-9));
-    const orderCodeStr = orderCode.toString(); // Store as String in DB
+    const orderCodeStr = orderCode.toString();
 
-    // 4. Create order record in DB
-    const { data: order, error: orderError } = await supabaseAdmin
-      .from('orders')
-      .insert({
-        user_id: user.id,
-        status: 'PENDING',
-        order_code: orderCodeStr,
-        family_email_capture: familyEmail || null,
-      })
-      .select()
-      .single();
+    // =========================================================================
+    // 4. ATOMIC STOCK CHECK + ORDER INSERT via Postgres RPC (Advisory Lock)
+    //
+    //    create_pending_order() acquires pg_advisory_xact_lock(variant_id),
+    //    performs the effective-stock calculation (AVAILABLE - PENDING), and
+    //    inserts into both `orders` and `order_items` inside one transaction.
+    //    If stock is exhausted it RAISE EXCEPTIONs with code 'OUT_OF_STOCK'.
+    //    No race condition is possible because the lock serialises all
+    //    concurrent requests for the same variant_id at the DB level.
+    // =========================================================================
+    const { data: rpcResult, error: rpcError } = await supabaseAdmin.rpc(
+      'create_pending_order',
+      {
+        p_user_id:      user.id,
+        p_variant_id:   variantId,
+        p_product_id:   productId,
+        p_order_code:   orderCodeStr,
+        p_family_email: familyEmail || null,
+        p_price:        variant.price,
+      }
+    );
 
-    if (orderError || !order) {
-      console.error('[createOrder] DB error:', orderError);
+    if (rpcError) {
+      // Postgres RAISE EXCEPTION message surfaces in rpcError.message
+      const isOutOfStock = rpcError.message?.includes('OUT_OF_STOCK');
+      console.error('[createOrder] RPC error:', rpcError.message);
+
+      if (isOutOfStock) {
+        res.status(400).json({
+          success: false,
+          error: 'Sản phẩm đã hết hàng hoặc đang có người khác tiến hành thanh toán. Vui lòng thử lại sau ít phút!',
+        });
+      } else {
+        res.status(500).json({ success: false, error: 'Không thể tạo đơn hàng. Vui lòng thử lại.' });
+      }
+      return;
+    }
+
+    const orderId = rpcResult?.order_id;
+    if (!orderId) {
+      console.error('[createOrder] RPC returned no order_id:', rpcResult);
       res.status(500).json({ success: false, error: 'Failed to create order' });
       return;
     }
 
-    // 5. Create order_item record
-    await supabaseAdmin.from('order_items').insert({
-      order_id: order.id,
-      variant_id: variantId,
-      product_id: productId,
-      price: variant.price,
-    });
-
-    // 6. Call PayOS to create payment link
+    // =========================================================================
+    // 5. Call PayOS to create payment link (unchanged from original flow)
+    // =========================================================================
     const productInfo = variant.products;
     const productName = productInfo?.name || 'San pham';
 
@@ -132,7 +107,7 @@ router.post('/create', requireAuth, async (req, res) => {
     res.json({
       success: true,
       data: {
-        orderId: order.id,
+        orderId,
         orderCode: orderCodeStr,
         checkoutUrl: paymentLink.checkoutUrl,
         qrCode: paymentLink.qrCode,
@@ -143,6 +118,7 @@ router.post('/create', requireAuth, async (req, res) => {
     res.status(500).json({ success: false, error: 'Failed to create payment link' });
   }
 });
+
 
 // Protected: check order status
 router.get('/status/:orderCode', requireAuth, async (req, res) => {

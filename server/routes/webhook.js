@@ -11,7 +11,13 @@ router.post('/payos', async (req, res) => {
   // ⚠️ ALWAYS return 200 regardless of processing result
   // If we return non-200, PayOS will retry and cause spam
 
-  const body = req.body;
+  const body = req.body || {};
+  console.log('[Webhook] Received raw body:', body); // <-- Thêm dòng này
+
+  // Trả về 200 ngay nếu PayOS gửi ping kiểm tra kết nối
+  if (!body || Object.keys(body).length === 0) {
+    return res.status(200).json({ success: true, message: 'Webhook active' });
+  }
 
   try {
     // 1. Verify HMAC signature (sorted keys)
